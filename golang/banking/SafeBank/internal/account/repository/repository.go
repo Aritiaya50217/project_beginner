@@ -15,7 +15,7 @@ type AccountRepository interface {
 	Update(account model.Account) error
 
 	CreateTransaction(tx model.Transaction) error
-	FindTransactionByAccountID(accountID int) ([]model.Transaction, error)
+	FindTransactionsByAccountID(accountID int) ([]model.Transaction, error)
 }
 
 // mysqlAccountRepository struct เก็บ *sql.DB
@@ -76,7 +76,7 @@ func (r *mysqlAccountRepository) CreateTransaction(tx model.Transaction) error {
 }
 
 // FindTransactionsByAccountID ดึงประวัติธุรกรรมตามบัญชี
-func (r *mysqlAccountRepository) FindTransactionByAccountID(accountID int) ([]model.Transaction, error) {
+func (r *mysqlAccountRepository) FindTransactionsByAccountID(accountID int) ([]model.Transaction, error) {
 	query := `SELECT id, account_id, amount, type, created_at FROM transactions WHERE account_id = ? ORDER BY created_at DESC`
 	rows, err := r.db.Query(query, accountID)
 	if err != nil {

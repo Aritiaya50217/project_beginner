@@ -95,5 +95,5 @@ func (s *accountService) Withdraw(id int, amount float64) error {
 
 // GetTransactions ดึงรายการธุรกรรมของบัญชี
 func (s *accountService) GetTransactions(id int) ([]model.Transaction, error) {
-	return s.repo.FindTransactionByAccountID(id)
+	return s.repo.FindTransactionsByAccountID(id)
 }
