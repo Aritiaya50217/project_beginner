@@ -1,12 +1,19 @@
-FROM golang:1.23
+# Dockerfile
+FROM golang:1.23-alpine
 
-COPY go mod ./
-COPY go sum ./ 
-RUN go mod download 
+WORKDIR /app
 
+# Copy go.mod + go.sum first and download deps
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
 COPY . .
-RUN go build -o main ./cmd/main.go 
+
+# Build app
+RUN go build -o main ./cmd/main.go
 
 EXPOSE 8080
 
+# Run the app
 CMD ["./main"]

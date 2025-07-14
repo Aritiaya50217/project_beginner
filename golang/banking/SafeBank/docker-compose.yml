@@ -1,37 +1,34 @@
 version: '3.8'
+
 services:
   db:
     image: mysql:8
-    container_name: safebank_db
-    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: safebank
     ports:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: safebank_app  
-    ports:
-      - "8080:8080"
+    build: .
     depends_on:
       db:
-        condition: service_healthy  
+        condition: service_healthy
+    ports:
+      - "8080:8080"
     environment:
       DB_HOST: db
       DB_PORT: 3306
-      DB_USER: root 
+      DB_USER: root
       DB_PASSWORD: root
       DB_NAME: safebank
 
-    volumes:
-      - .:/app     
-
 volumes:
   dbdata:
-     
