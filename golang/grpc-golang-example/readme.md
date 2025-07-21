@@ -1,6 +1,4 @@
 ติดตั้ง protoc และ plugin สำหรับ Go
-    # ติดตั้ง protobuf compiler (ถ้ายังไม่มี)
-    # macOS
     brew install protobuf
 
     # Ubuntu/Debian
@@ -19,6 +17,7 @@ Compile .proto เป็น Go
     protoc --go_out=. --go-grpc_out=. proto/helloworld.proto
 
 วิธีการรัน
+    
     1. รัน server:
         go run server/main.go
 
