@@ -1,9 +1,11 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Account struct {
-	ID        string `bson:"_id,omitempty"`
+	ID        string
 	Owner     string
 	Balance   float64
 	CreatedAt time.Time
@@ -11,4 +13,6 @@ type Account struct {
 
 type AccountRepository interface {
 	Create(account *Account) error
+	FindByID(id string) (*Account, error)
+	Update(account *Account) error
 }
