@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: banking-app
-          image: yourdockerhubusername/banking-app:latest
+          image: aritiaya50217/banking-app:latest
           ports:
             - containerPort: 8080
           env:

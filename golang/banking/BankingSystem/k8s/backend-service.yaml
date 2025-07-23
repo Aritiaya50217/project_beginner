@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: banking-app-service
+spec:
+  selector:
+    app: banking-app
+  ports:
+    - protocol: TCP
+      port: 80        # Port ที่จะ expose
+      targetPort: 8080 # Port ภายใน container ที่รันแอป Go
+  type: LoadBalancer   # ใช้ NodePort ก็ได้ถ้าใช้ Minikube หรือไม่มี cloud load balancer

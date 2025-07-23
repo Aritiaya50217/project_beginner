@@ -29,14 +29,20 @@ Step 2: Deploy MongoDB + App
 
 - kubectl apply -f k8s/mongo-deployment.yaml
 
+- kubectl apply -f k8s/mongo-service.yaml
+
 - kubectl apply -f k8s/backend-deployment.yaml
+
+- kubectl apply -f k8s/backend-service.yaml
+
 
 Step 3: ตรวจสอบว่า Service ทำงาน
 
+- kubectl get pods
 - kubectl get svc
 
 วิธี Stop
 
 - docker-compose down # สำหรับ Docker Compose
 
-- kubectl delete -f k8s/ # สำหรับ Kubernetes
+- kubectl delete -f k8s/ <filename> 
