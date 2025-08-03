@@ -1,10 +1,11 @@
 package mongo
 
 import (
-	"banking-hexagonal/internal/domain"
 	"context"
 	"errors"
 	"time"
+
+	"github.com/Aritiaya50217/project_beginner/internal/domain"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

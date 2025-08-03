@@ -1,7 +1,7 @@
 package application
 
 import (
-	"banking-hexagonal/internal/domain"
+	"github.com/Aritiaya50217/project_beginner/internal/domain"
 	"errors"
 	"time"
 )

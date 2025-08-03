@@ -1,7 +1,7 @@
 package http
 
 import (
-	"banking-hexagonal/internal/application"
+	"github.com/Aritiaya50217/project_beginner/internal/application"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
