@@ -5,6 +5,7 @@ import (
 	"booking-system-user-service/internal/domain"
 	"booking-system-user-service/internal/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -53,5 +54,23 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
+
+}
+
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	userID := c.Param("id")
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in token"})
+		return
+	}
+
+	user, err := h.usecase.GetUserByID(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": user})
 
 }
