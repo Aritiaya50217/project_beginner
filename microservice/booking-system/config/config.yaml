@@ -1,0 +1,12 @@
+server:
+  port: ${USER_SERVICE_PORT}
+
+sqlserver:
+  user: ${SQLSERVER_USER}
+  password: ${SQLSERVER_PASSWORD}
+  host: ${SQLSERVER_HOST}
+  port: ${SQLSERVER_PORT}
+  dbname: ${SQLSERVER_DB}
+
+jwt:
+  secret: ${JWT_SECRET}
