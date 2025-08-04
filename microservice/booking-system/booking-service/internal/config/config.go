@@ -32,12 +32,12 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		ServerPort:    os.Getenv("USER_SERVICE_PORT"),
-		SQLServerUser: os.Getenv("USER_SQLSERVER_USER"),
-		SQLServerPass: os.Getenv("USER_SQLSERVER_PASSWORD"),
-		SQLServerHost: os.Getenv("USER_SQLSERVER_HOST"),
-		SQLServerPort: os.Getenv("USER_SQLSERVER_PORT"),
-		SQLServerDB:   os.Getenv("USER_SQLSERVER_DB"),
+		ServerPort:    os.Getenv("BOOKING_SERVICE_PORT"),
+		SQLServerUser: os.Getenv("BOOKING_SQLSERVER_USER"),
+		SQLServerPass: os.Getenv("BOOKING_SQLSERVER_PASSWORD"),
+		SQLServerHost: os.Getenv("BOOKING_SQLSERVER_HOST"),
+		SQLServerPort: os.Getenv("BOOKING_SQLSERVER_PORT"),
+		SQLServerDB:   os.Getenv("BOOKING_SQLSERVER_DB"),
 		JWTSecret:     os.Getenv("JWT_SECRET"),
 	}
 }
