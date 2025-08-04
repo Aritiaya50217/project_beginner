@@ -43,7 +43,7 @@ func NewAuthMiddleware(secret string) gin.HandlerFunc {
 			return
 		}
 
-		email, _ := claims["email"]
+		email := claims["email"]
 
 		// Inject into Gin context
 		c.Set("user_id", userID)
