@@ -28,6 +28,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	user := &domain.User{
 		Email:    req.Email,
 		Password: req.Password,
+		Name:     req.Name,
 	}
 
 	if err := h.usecase.Register(c.Request.Context(), user); err != nil {
