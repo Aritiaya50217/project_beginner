@@ -3,8 +3,10 @@ package handler
 import (
 	"booking-system-booking-service/internal/app"
 	"booking-system-booking-service/internal/domain"
+	"booking-system-booking-service/internal/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,9 +20,22 @@ func NewBookingHandler(usecase app.BookingUsecase) *BookingHandler {
 }
 
 func (h *BookingHandler) CreateBooking(c *gin.Context) {
-	var booking domain.Booking
-	if err := c.ShouldBindJSON(&booking); err != nil {
+	var req utils.BookingRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	startTime, err := time.Parse(time.RFC3339, req.StartTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_time format"})
+		return
+	}
+
+	endTime, err := time.Parse(time.RFC3339, req.EndTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_time format"})
 		return
 	}
 
@@ -31,13 +46,19 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	booking.UserID = int(userID.(float64)) // JWT returns float64
+	booking := domain.Booking{
+		UserID:    int(userID.(float64)),
+		ItemID:    req.ItemID,
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
+
 	if err := h.usecase.Create(c, &booking); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, booking)
+	c.JSON(http.StatusCreated, gin.H{"message": "booking created successfully"})
 }
 
 func (h *BookingHandler) GetByUserID(c *gin.Context) {

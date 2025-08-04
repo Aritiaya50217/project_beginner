@@ -1,9 +1,11 @@
 package domain
 
+import "time"
+
 type Item struct {
-	ID       int     `gorm:"primaryKey" json:"id"`
-	Name     string  `json:"name"`
-	Type     string  `json:"type"`
-	Price    float64 `json:"price"`
-	Quantity int     `json:"quantity"`
+	ID          int       `json:"id" gorm:"primaryKey"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
