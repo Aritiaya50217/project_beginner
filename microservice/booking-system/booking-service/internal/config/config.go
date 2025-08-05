@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -19,18 +17,6 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	viper.SetConfigName("config") // config.yaml
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath("..") // for monorepo
-
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println("No config.yaml found, relying on env variables only")
-	}
-
 	return &Config{
 		ServerPort:    os.Getenv("BOOKING_SERVICE_PORT"),
 		SQLServerUser: os.Getenv("BOOKING_SQLSERVER_USER"),
