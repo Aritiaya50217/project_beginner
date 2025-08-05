@@ -3,6 +3,7 @@ package repository
 import (
 	"booking-system-user-service/internal/domain"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -12,8 +13,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	FindByID(ctx context.Context, id int) (*domain.User, error)
-	GetAll(ctx context.Context) ([]domain.User, error)
-	// UpdateUser(user *domain.User) error
+	UpdateUser(ctx context.Context, user *domain.User) error
 }
 
 type userRepository struct {
@@ -53,16 +53,16 @@ func (r *userRepository) FindByID(ctx context.Context, id int) (*domain.User, er
 	return &user, nil
 }
 
-func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
-	var users []domain.User
-	err := r.db.Model(&domain.User{}).WithContext(ctx).Select("id", "name", "email").
-		Order("id").Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
+func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) error {
+	tx := r.db.WithContext(ctx).Model(&domain.User{}).
+		Where("id = ?", user.ID).
+		Updates(domain.User{Name: user.Name})
 
-// func (r *userRepository) UpdateUser(user *domain.User) error {
-// 	err := r.db.
-// }
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return errors.New("no user updated")
+	}
+	return nil
+}

@@ -75,20 +75,45 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 
 }
 
-func (h *UserHandler) GetAll(c *gin.Context) {
-	users, err := h.usecase.GetAll(c)
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	userID := c.Param("id")
+	id, err := strconv.Atoi(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	var result []utils.UserResponse
-	for _, user := range users {
-		result = append(result, utils.UserResponse{
-			ID:    int(user.ID),
-			Email: user.Email,
-			Name:  user.Name,
-		})
+	userIDFormToken, exist := c.Get("user_id")
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
-	c.JSON(http.StatusOK, result)
+
+	if int(userIDFormToken.(float64)) != id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to update this user"})
+		return
+	}
+
+	var req utils.UserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get existing user from DB
+	user, err := h.usecase.GetUserByID(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	user.Name = req.Name
+	user.Email = req.Email
+
+	if err = h.usecase.UpdateUser(c, user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
 }
