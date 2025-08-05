@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -19,7 +20,6 @@ func NewAuthMiddleware(secret string) gin.HandlerFunc {
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			// Ensure token method is HMAC
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -37,19 +37,32 @@ func NewAuthMiddleware(secret string) gin.HandlerFunc {
 			return
 		}
 
+		// Check expiration
+		if exp, ok := claims["exp"].(float64); ok {
+			if int64(exp) < time.Now().Unix() {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
+				return
+			}
+		}
+
 		userID, ok := claims["user_id"]
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user_id not found in token"})
 			return
 		}
 
-		email := claims["email"]
+		userIDFloat, ok := userID.(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
+			return
+		}
 
-		// Inject into Gin context
-		c.Set("user_id", userID)
+		email, _ := claims["email"]
+
+		// Set user_id as int
+		c.Set("user_id", int(userIDFloat))
 		c.Set("email", email)
 
 		c.Next()
 	}
-
 }

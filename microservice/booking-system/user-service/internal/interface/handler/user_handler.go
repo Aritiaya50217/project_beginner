@@ -58,32 +58,48 @@ func (h *UserHandler) Login(c *gin.Context) {
 }
 
 func (h *UserHandler) GetUserByID(c *gin.Context) {
-	userID := c.Param("id")
-	id, err := strconv.Atoi(userID)
+	userIDParam := c.Param("id")
+	id, err := strconv.Atoi(userIDParam)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in token"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 
-	userIDFormToken, exist := c.Get("user_id")
+	// Get user ID from JWT token
+	userIDFromToken, exist := c.Get("user_id")
 	if !exist {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	
+	var userIDInt int
+	switch v := userIDFromToken.(type) {
+	case float64:
+		userIDInt = int(v)
+	case int:
+		userIDInt = v
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
 		return
 	}
 
-	if int(userIDFormToken.(float64)) != id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to update this user"})
+	if userIDInt != id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you cannot access this user"})
+		return
+	}
+
+	if userIDInt != id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you cannot access this user"})
 		return
 	}
 
 	user, err := h.usecase.GetUserByID(c, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": user})
-
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context) {
