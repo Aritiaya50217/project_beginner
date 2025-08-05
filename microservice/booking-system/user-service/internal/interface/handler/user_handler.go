@@ -74,3 +74,21 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": user})
 
 }
+
+func (h *UserHandler) GetAll(c *gin.Context) {
+	users, err := h.usecase.GetAll(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+		return
+	}
+
+	var result []utils.UserResponse
+	for _, user := range users {
+		result = append(result, utils.UserResponse{
+			ID:    int(user.ID),
+			Email: user.Email,
+			Name:  user.Name,
+		})
+	}
+	c.JSON(http.StatusOK, result)
+}

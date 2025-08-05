@@ -12,6 +12,8 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	FindByID(ctx context.Context, id int) (*domain.User, error)
+	GetAll(ctx context.Context) ([]domain.User, error)
+	// UpdateUser(user *domain.User) error
 }
 
 type userRepository struct {
@@ -50,3 +52,17 @@ func (r *userRepository) FindByID(ctx context.Context, id int) (*domain.User, er
 	}
 	return &user, nil
 }
+
+func (r *userRepository) GetAll(ctx context.Context) ([]domain.User, error) {
+	var users []domain.User
+	err := r.db.Model(&domain.User{}).WithContext(ctx).Select("id", "name", "email").
+		Order("id").Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+// func (r *userRepository) UpdateUser(user *domain.User) error {
+// 	err := r.db.
+// }
