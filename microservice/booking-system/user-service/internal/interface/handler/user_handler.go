@@ -65,6 +65,17 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
+	userIDFormToken, exist := c.Get("user_id")
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	if int(userIDFormToken.(float64)) != id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to update this user"})
+		return
+	}
+
 	user, err := h.usecase.GetUserByID(c, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
