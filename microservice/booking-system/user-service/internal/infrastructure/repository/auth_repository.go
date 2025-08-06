@@ -3,6 +3,7 @@ package repository
 import (
 	"booking-system-user-service/internal/domain"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -27,16 +28,15 @@ func (r *authRepository) Create(ctx context.Context, auth domain.Auth) error {
 	return nil
 }
 
-// func (r *authRepository) DeleteExpiredTokens(ctx context.Context) error {
-// 	return r.db.WithContext(ctx).Where("expired_at <= ?", time.Now()).
-// 		Delete(&domain.Auth{}).Error
-// }
-
 func (r *authRepository) FindByToken(ctx context.Context, token string) (*domain.Auth, error) {
 	var auth domain.Auth
-	err := r.db.WithContext(ctx).Where("token = ?", token).First(&auth).Error
-	if err != nil {
+	if err := r.db.WithContext(ctx).Where("token = ?", token).First(&auth).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // ไม่เจอ ถือว่า token ใช้ไม่ได้
+		}
+
 		return nil, err
 	}
+
 	return &auth, nil
 }

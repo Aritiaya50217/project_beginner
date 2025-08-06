@@ -21,6 +21,14 @@ type UserResponse struct {
 	Name  string `json:"name"`
 }
 
+type TokenValidationRequest struct {
+	Token string `json:"token"`
+}
+
+type TokenValidationResponse struct {
+	Valid bool `json:"valid"`
+}
+
 func GenerateJWT(userID uint, email, secret string) (string, time.Time, error) {
 	exp := time.Now().Add(10 * time.Minute)
 
