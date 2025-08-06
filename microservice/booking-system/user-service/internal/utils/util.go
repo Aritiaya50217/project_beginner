@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"booking-system-user-service/internal/domain"
 	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
 )
 
 type UserRequest struct {
@@ -36,4 +38,20 @@ func GenerateJWT(userID uint, email, secret string) (string, time.Time, error) {
 	}
 
 	return tokenStr, exp, nil
+}
+
+func StartExpiredTokenCleanupJob(db *gorm.DB) {
+	go func() {
+		for {
+			time.Sleep(1 * time.Hour)
+
+			log.Println("[Cron] Cleaning up expired tokens...")
+
+			if err := db.Where("expired_at < ?", time.Now()).Delete(&domain.Auth{}).Error; err != nil {
+				log.Printf("[Cron] Failed to delete expired tokens: %v", err)
+			}
+
+			log.Println("[Cron] Expired tokens cleaned up")
+		}
+	}()
 }

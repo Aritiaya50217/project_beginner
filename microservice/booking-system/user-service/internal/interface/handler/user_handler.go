@@ -71,7 +71,7 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	
+
 	var userIDInt int
 	switch v := userIDFromToken.(type) {
 	case float64:
@@ -80,11 +80,6 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		userIDInt = v
 	default:
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
-		return
-	}
-
-	if userIDInt != id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "you cannot access this user"})
 		return
 	}
 
@@ -116,8 +111,19 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if int(userIDFormToken.(float64)) != id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to update this user"})
+	var userIDInt int
+	switch v := userIDFormToken.(type) {
+	case float64:
+		userIDInt = int(v)
+	case int:
+		userIDInt = v
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
+		return
+	}
+
+	if userIDInt != id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you cannot access this user"})
 		return
 	}
 
