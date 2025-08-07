@@ -4,6 +4,7 @@ import (
 	"booking-system-user-service/internal/app"
 	"booking-system-user-service/internal/domain"
 	"booking-system-user-service/internal/utils"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -58,6 +59,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 }
 
 func (h *UserHandler) GetUserByID(c *gin.Context) {
+
 	userIDParam := c.Param("id")
 	id, err := strconv.Atoi(userIDParam)
 	if err != nil {
@@ -101,7 +103,9 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": user})
+	log.Printf("Returning user: %+v", user)
+	c.JSON(http.StatusOK, user)
+
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context) {

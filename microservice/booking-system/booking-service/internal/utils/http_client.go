@@ -20,6 +20,7 @@ func GetUserInfo(userServiceURL, userID, token string) (*UserResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	client := &http.Client{}

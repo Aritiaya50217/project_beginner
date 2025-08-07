@@ -48,20 +48,9 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	var userIDInt int
-	switch v := userIDFromToken.(type) {
-	case float64:
-		userIDInt = int(v)
-	case int:
-		userIDInt = v
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
-		return
-	}
-
 	booking := domain.Booking{
-		UserID:    userIDInt,
-		ItemID:    req.ItemID,
+		UserID:    userIDFromToken.(uint),
+		ItemID:    uint(req.ItemID),
 		StartTime: startTime,
 		EndTime:   endTime,
 	}
@@ -75,23 +64,19 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 }
 
 func (h *BookingHandler) GetByID(c *gin.Context) {
+	// ดึง Authorization header มา
+	authHeader := c.GetHeader("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token)
+
 	userIDFromToken, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+	userIDInt := userIDFromToken.(int)
 
-	var userIDInt int
-	switch v := userIDFromToken.(type) {
-	case float64:
-		userIDInt = int(v)
-	case int:
-		userIDInt = v
-	default:
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
-		return
-	}
-
+	// ดึง booking ID
 	bookingIDParam := c.Param("id")
 	bookingID, err := strconv.Atoi(bookingIDParam)
 	if err != nil {
@@ -105,30 +90,31 @@ func (h *BookingHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	if booking.UserID != userIDInt {
+	if booking.UserID != uint(userIDInt) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
 		return
 	}
 
-	// user-service
-	token := c.GetHeader("Authorization")
+	userIDStr := strconv.FormatUint(uint64(booking.UserID), 10)
 
-	if !strings.HasPrefix(token, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token format"})
-		return
-	}
-
-	userIDstr := strconv.Itoa(booking.UserID)
-	user, err := utils.GetUserInfo(os.Getenv("USER_SERVICE_URL"), userIDstr, token)
+	user, err := utils.GetUserInfo(os.Getenv("USER_SERVICE_URL"), userIDStr, token)
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to fetch user info"})
 		return
 	}
 
-	result := domain.Booking{
-		ID:     booking.ID,
-		UserID: user.ID,
-		ItemID: booking.ItemID,
+	var userInfo utils.UserResponse
+	userInfo.ID = user.ID
+	userInfo.Name = user.Name
+	userInfo.Email = user.Email
+
+	result := utils.BookingResponse{
+		ID:        booking.ID,
+		UserID:    userInfo,
+		StartTime: utils.FormatDate(booking.StartTime),
+		EndTime:   utils.FormatDate(booking.EndTime),
+		CreateAt:  utils.FormatDate(booking.CreatedAt),
+		UpdateAt:  utils.FormatDate(booking.UpdatedAt),
 	}
 
 	c.JSON(http.StatusOK, result)
