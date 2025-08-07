@@ -5,7 +5,9 @@ import (
 	"booking-system-booking-service/internal/domain"
 	"booking-system-booking-service/internal/utils"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,15 +41,26 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	// Get user_id from JWT
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in token"})
+	// Get user ID from JWT token
+	userIDFromToken, exist := c.Get("user_id")
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var userIDInt int
+	switch v := userIDFromToken.(type) {
+	case float64:
+		userIDInt = int(v)
+	case int:
+		userIDInt = v
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
 		return
 	}
 
 	booking := domain.Booking{
-		UserID:    int(userID.(float64)),
+		UserID:    userIDInt,
 		ItemID:    req.ItemID,
 		StartTime: startTime,
 		EndTime:   endTime,
@@ -61,14 +74,24 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "booking created successfully"})
 }
 
-func (h *BookingHandler) GetByUserID(c *gin.Context) {
-	userIDValue, exists := c.Get("user_id")
+func (h *BookingHandler) GetByID(c *gin.Context) {
+	userIDFromToken, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	userID := int(userIDValue.(float64)) // เพราะ JWT ใช้ float64
+	var userIDInt int
+	switch v := userIDFromToken.(type) {
+	case float64:
+		userIDInt = int(v)
+	case int:
+		userIDInt = v
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user_id type"})
+		return
+	}
+
 	bookingIDParam := c.Param("id")
 	bookingID, err := strconv.Atoi(bookingIDParam)
 	if err != nil {
@@ -82,10 +105,31 @@ func (h *BookingHandler) GetByUserID(c *gin.Context) {
 		return
 	}
 
-	if booking.UserID != userID {
+	if booking.UserID != userIDInt {
 		c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
 		return
 	}
 
-	c.JSON(http.StatusOK, booking)
+	// user-service
+	token := c.GetHeader("Authorization")
+
+	if !strings.HasPrefix(token, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token format"})
+		return
+	}
+
+	userIDstr := strconv.Itoa(booking.UserID)
+	user, err := utils.GetUserInfo(os.Getenv("USER_SERVICE_URL"), userIDstr, token)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to fetch user info"})
+		return
+	}
+
+	result := domain.Booking{
+		ID:     booking.ID,
+		UserID: user.ID,
+		ItemID: booking.ItemID,
+	}
+
+	c.JSON(http.StatusOK, result)
 }

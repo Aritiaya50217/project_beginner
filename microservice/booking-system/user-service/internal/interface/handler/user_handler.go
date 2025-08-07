@@ -88,6 +88,13 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
+	// auth ตรวจ token
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing authorization"})
+		return
+	}
+
 	user, err := h.usecase.GetUserByID(c, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})

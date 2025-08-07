@@ -7,24 +7,26 @@ import (
 )
 
 type Config struct {
-	ServerPort    string
-	SQLServerUser string
-	SQLServerPass string
-	SQLServerHost string
-	SQLServerPort string
-	SQLServerDB   string
-	JWTSecret     string
+	ServerPort     string
+	SQLServerUser  string
+	SQLServerPass  string
+	SQLServerHost  string
+	SQLServerPort  string
+	SQLServerDB    string
+	JWTSecret      string
+	UserserviceUrl string
 }
 
 func LoadConfig() *Config {
 	return &Config{
-		ServerPort:    os.Getenv("BOOKING_SERVICE_PORT"),
-		SQLServerUser: os.Getenv("BOOKING_SQLSERVER_USER"),
-		SQLServerPass: os.Getenv("BOOKING_SQLSERVER_PASSWORD"),
-		SQLServerHost: os.Getenv("BOOKING_SQLSERVER_HOST"),
-		SQLServerPort: os.Getenv("BOOKING_SQLSERVER_PORT"),
-		SQLServerDB:   os.Getenv("BOOKING_SQLSERVER_DB"),
-		JWTSecret:     os.Getenv("JWT_SECRET"),
+		ServerPort:     os.Getenv("BOOKING_SERVICE_PORT"),
+		SQLServerUser:  os.Getenv("BOOKING_SQLSERVER_USER"),
+		SQLServerPass:  os.Getenv("BOOKING_SQLSERVER_PASSWORD"),
+		SQLServerHost:  os.Getenv("BOOKING_SQLSERVER_HOST"),
+		SQLServerPort:  os.Getenv("BOOKING_SQLSERVER_PORT"),
+		SQLServerDB:    os.Getenv("BOOKING_SQLSERVER_DB"),
+		JWTSecret:      os.Getenv("JWT_SECRET"),
+		UserserviceUrl: os.Getenv("USER_SERVICE_URL"),
 	}
 }
 

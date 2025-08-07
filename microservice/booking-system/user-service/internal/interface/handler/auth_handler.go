@@ -2,7 +2,6 @@ package handler
 
 import (
 	"booking-system-user-service/internal/app"
-	"booking-system-user-service/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,18 +16,17 @@ func NewAuthHandler(usecase app.AuthUsecase) *AuthHandler {
 }
 
 func (h *AuthHandler) ValidateToken(c *gin.Context) {
-	var req utils.TokenValidationRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Token is required"})
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization header is required"})
 		return
 	}
 
-	status, err := h.usecase.ValidateToken(c, req.Token)
+	status, err := h.usecase.ValidateToken(c, token)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "invalid", "error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": status}) // เช่น valid, expired, revoked
+	c.JSON(http.StatusOK, gin.H{"status": status}) // เช่น status: "valid"
 }
