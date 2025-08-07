@@ -3,6 +3,7 @@ package repository
 import (
 	"booking-system-booking-service/internal/domain"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +13,7 @@ type ItemRepository interface {
 	FindByID(ctx context.Context, id int) (*domain.Item, error)
 	FindByName(ctx context.Context, name string) (*domain.Item, error)
 	GetAllItem(ctx context.Context, offset, limit int) ([]*domain.Item, int64, error)
+	DeleteItem(ctx context.Context, id int) error
 }
 
 type itemRepository struct {
@@ -58,4 +60,18 @@ func (r *itemRepository) GetAllItem(ctx context.Context, offset, limit int) ([]*
 	}
 
 	return items, total, nil
+}
+
+func (r *itemRepository) DeleteItem(ctx context.Context, id int) error {
+	var count int64
+	r.db.Model(&domain.Booking{}).Where("item_id = ?", id).Count(&count)
+	if count > 0 {
+		return errors.New("cannot delete item: it is still referenced by bookings")
+	}
+
+	err := r.db.WithContext(ctx).Delete(&domain.Item{ID: id}).Error // แล้วค่อยลบ item
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -53,9 +53,11 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
+	itemID := uint(req.ItemID)
+
 	booking := domain.Booking{
 		UserID:    uint(userIDInt),
-		ItemID:    uint(req.ItemID),
+		ItemID:    &itemID,
 		StartTime: startTime,
 		EndTime:   endTime,
 	}

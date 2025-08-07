@@ -76,3 +76,25 @@ func (h *ItemHandler) GetAll(c *gin.Context) {
 		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
 	})
 }
+
+func (h *ItemHandler) DeleteItem(c *gin.Context) {
+	itemIDParam := c.Param("id")
+	itemID, err := strconv.Atoi(itemIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	item, err := h.usecase.GetByID(c, itemID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	err = h.usecase.DeleteItem(c, item.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "deleted item is successfully"})
+}
