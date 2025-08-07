@@ -162,7 +162,6 @@ func (h *BookingHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-
 	for _, booking := range bookings {
 		if booking.UserID != uint(userIDInt) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})

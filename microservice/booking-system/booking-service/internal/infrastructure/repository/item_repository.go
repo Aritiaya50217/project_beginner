@@ -10,6 +10,7 @@ import (
 type ItemRepository interface {
 	Create(ctx context.Context, item *domain.Item) error
 	FindByID(ctx context.Context, id int) (*domain.Item, error)
+	FindByName(ctx context.Context, name string) (*domain.Item, error)
 }
 
 type itemRepository struct {
@@ -29,5 +30,14 @@ func (r *itemRepository) FindByID(ctx context.Context, id int) (*domain.Item, er
 	if err := r.db.WithContext(ctx).First(&item, id).Error; err != nil {
 		return nil, err
 	}
+	return &item, nil
+}
+
+func (r *itemRepository) FindByName(ctx context.Context, name string) (*domain.Item, error) {
+	var item domain.Item
+	if err := r.db.WithContext(ctx).Where("name = ?", name).First(&item).Error; err != nil {
+		return nil, err
+	}
+
 	return &item, nil
 }
