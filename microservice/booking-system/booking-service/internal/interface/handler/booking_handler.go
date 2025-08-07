@@ -129,3 +129,66 @@ func (h *BookingHandler) GetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+func (h *BookingHandler) GetAll(c *gin.Context) {
+	// ดึง Authorization header มา
+	authHeader := c.GetHeader("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token)
+
+	userIDFromToken, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userIDInt := userIDFromToken.(int)
+
+	offsetStr := c.Query("offset")
+	limitStr := c.Query("limit")
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	bookings, total, err := h.usecase.GetAllBooking(c, offset, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get bookings"})
+		return
+	}
+
+
+	for _, booking := range bookings {
+		if booking.UserID != uint(userIDInt) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
+			return
+		}
+
+		userIDStr := strconv.FormatUint(uint64(booking.UserID), 10)
+
+		user, err := utils.GetUserInfo(os.Getenv("USER_SERVICE_URL"), userIDStr, token)
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": "failed to fetch user info"})
+			return
+		}
+
+		if uint(user.ID) != booking.UserID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":       bookings,
+		"total":      total,
+		"offset":     offset,
+		"limit":      limit,
+		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
+	})
+
+}
