@@ -113,9 +113,14 @@ func (h *BookingHandler) GetByID(c *gin.Context) {
 	userInfo.Name = user.Name
 	userInfo.Email = user.Email
 
+	var itemInfo utils.ItemResponse
+	itemInfo.ID = booking.Item.ID
+	itemInfo.Name = booking.Item.Name
+
 	result := utils.BookingResponse{
 		ID:        booking.ID,
 		UserID:    userInfo,
+		ItemID:    itemInfo,
 		StartTime: utils.FormatDate(booking.StartTime),
 		EndTime:   utils.FormatDate(booking.EndTime),
 		CreateAt:  utils.FormatDate(booking.CreatedAt),
