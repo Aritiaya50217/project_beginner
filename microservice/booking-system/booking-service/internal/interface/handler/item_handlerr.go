@@ -48,3 +48,31 @@ func (h *ItemHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": item})
 
 }
+
+func (h *ItemHandler) GetAll(c *gin.Context) {
+	offsetStr := c.Query("offset")
+	limitStr := c.Query("limit")
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	items, total, err := h.usecase.GetAllItem(c, offset, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get bookings"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data":       items,
+		"total":      total,
+		"offset":     offset,
+		"limit":      limit,
+		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
+	})
+}

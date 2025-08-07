@@ -11,6 +11,7 @@ type ItemRepository interface {
 	Create(ctx context.Context, item *domain.Item) error
 	FindByID(ctx context.Context, id int) (*domain.Item, error)
 	FindByName(ctx context.Context, name string) (*domain.Item, error)
+	GetAllItem(ctx context.Context, offset, limit int) ([]*domain.Item, int64, error)
 }
 
 type itemRepository struct {
@@ -40,4 +41,21 @@ func (r *itemRepository) FindByName(ctx context.Context, name string) (*domain.I
 	}
 
 	return &item, nil
+}
+
+func (r *itemRepository) GetAllItem(ctx context.Context, offset, limit int) ([]*domain.Item, int64, error) {
+	var items []*domain.Item
+	var total int64
+
+	err := r.db.WithContext(ctx).
+		Model(&domain.Item{}).
+		Count(&total).
+		Offset(offset).
+		Limit(limit).
+		Find(&items).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return items, total, nil
 }
