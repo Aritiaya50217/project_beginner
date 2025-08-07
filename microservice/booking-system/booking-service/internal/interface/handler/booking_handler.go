@@ -22,8 +22,20 @@ func NewBookingHandler(usecase app.BookingUsecase) *BookingHandler {
 }
 
 func (h *BookingHandler) CreateBooking(c *gin.Context) {
-	var req utils.BookingRequest
+	// ดึง Authorization header มา
+	authHeader := c.GetHeader("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token)
 
+	// Get user ID from JWT token
+	userIDFromToken, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userIDInt := userIDFromToken.(int)
+
+	var req utils.BookingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -41,15 +53,8 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	// Get user ID from JWT token
-	userIDFromToken, exist := c.Get("user_id")
-	if !exist {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
 	booking := domain.Booking{
-		UserID:    userIDFromToken.(uint),
+		UserID:    uint(userIDInt),
 		ItemID:    uint(req.ItemID),
 		StartTime: startTime,
 		EndTime:   endTime,
