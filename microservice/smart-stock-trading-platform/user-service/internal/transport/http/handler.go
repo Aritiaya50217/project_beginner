@@ -58,6 +58,19 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	// ดึง userID จาก context (เซ็ตโดย middleware)
+	userIDFromToken, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// เช็คว่า userID ใน token ต้องตรงกับ param id
+	if userIDFromToken.(uint) != uint(id) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden: you can only access your own user data"})
+		return
+	}
+
 	user, err := h.usecase.GetUserByID(c.Request.Context(), uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
