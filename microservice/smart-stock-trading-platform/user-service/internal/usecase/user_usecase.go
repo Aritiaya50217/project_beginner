@@ -5,8 +5,6 @@ import (
 	"errors"
 	"smart-stock-trading-platform-user-service/internal/domain"
 	"smart-stock-trading-platform-user-service/internal/port"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUsecase struct {
@@ -24,13 +22,14 @@ func (u *UserUsecase) Register(ctx context.Context, email, password, firstname, 
 		return nil, errors.New("email already exists")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashPassword, err := u.auth.HashPassword(ctx, password)
 	if err != nil {
 		return nil, err
 	}
+
 	user := &domain.User{
 		Email:     email,
-		Password:  string(hash),
+		Password:  string(hashPassword),
 		FirstName: firstname,
 		LastName:  lastname,
 	}
@@ -48,9 +47,19 @@ func (u *UserUsecase) Login(ctx context.Context, email, password string) (string
 		return "", errors.New("invalid email")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", err
+	if !u.auth.CheckPasswordHash(ctx, password, user.Password) {
+		return "", errors.New("invalid credentials")
 	}
+	return u.auth.GenerateToken(ctx, user.ID, user.Email)
+}
 
-	return u.auth.GenerateToken(ctx, user.ID)
+func (u *UserUsecase) Create(ctx context.Context, user *domain.User) error {
+	return u.repo.Create(ctx, user)
+}
+func (u *UserUsecase) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	return nil, nil
+}
+
+func (u *UserUsecase) GetUserByID(ctx context.Context, id uint) (*domain.User, error) {
+	return u.repo.GetUserByID(ctx, id)
 }

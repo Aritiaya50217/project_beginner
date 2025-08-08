@@ -2,40 +2,60 @@ package auth
 
 import (
 	"context"
-	"smart-stock-trading-platform-user-service/internal/port"
+	"errors"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type JWTAuth struct {
-	secret string
+type jwtService struct {
+	secretKey string
 }
 
-func NewJWTAuth(secret string) port.AuthService {
-	return &JWTAuth{secret: secret}
+func NewJWTService(secretKey string) *jwtService {
+	return &jwtService{secretKey: secretKey}
 }
 
-func (j *JWTAuth) GenerateToken(ctx context.Context, userID uint) (string, error) {
+func (j *jwtService) GenerateToken(ctx context.Context, userID uint, email string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString([]byte(j.secret))
+	return token.SignedString([]byte(j.secretKey))
 }
 
-func (j *JWTAuth) ValidateToken(ctx context.Context, token string) (uint, error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		return []byte(j.secret), nil
+func (j *jwtService) ValidateToken(ctx context.Context, tokenString string) (uint, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(j.secretKey), nil
 	})
 
-	if err != nil || !t.Valid {
-		return 0, err
+	if err != nil || !token.Valid {
+		return 0, errors.New("invalid token")
 	}
 
-	claims := t.Claims.(jwt.MapClaims)
-	uid := uint(claims["user_id"].(float64))
-	return uid, nil
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if id, ok := claims["user_id"].(float64); ok {
+			return uint(id), nil
+		}
+	}
+	return 0, errors.New("invalid claims")
+
+}
+
+func (j *jwtService) HashPassword(ctx context.Context, password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+func (j *jwtService) CheckPasswordHash(ctx context.Context, password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		return false
+	}
+	return true
 }

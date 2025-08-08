@@ -1,27 +1,29 @@
 package http
 
 import (
+	"log"
 	"net/http"
+	"smart-stock-trading-platform-user-service/internal/port"
 	"smart-stock-trading-platform-user-service/internal/usecase"
 	"smart-stock-trading-platform-user-service/internal/utils"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
-	usecase *usecase.UserUsecase
+	usecase     *usecase.UserUsecase
+	authService port.AuthService
 }
 
-func NewUserHandler(usecase *usecase.UserUsecase) *UserHandler {
-	return &UserHandler{usecase: usecase}
+// NewUserHandler รับ usecase และ auth service (เช่น jwt)
+func NewUserHandler(usecase *usecase.UserUsecase, auth port.AuthService) *UserHandler {
+	return &UserHandler{
+		usecase:     usecase,
+		authService: auth,
+	}
 }
-
-func (h *UserHandler) Routers(r *gin.RouterGroup) {
-	r.POST("/register", h.register)
-	r.POST("/login", h.login)
-}
-
-func (h *UserHandler) register(c *gin.Context) {
+func (h *UserHandler) Register(c *gin.Context) {
 	var req utils.ReqRegister
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -37,7 +39,7 @@ func (h *UserHandler) register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": user.ID})
 }
 
-func (h *UserHandler) login(c *gin.Context) {
+func (h *UserHandler) Login(c *gin.Context) {
 	var req utils.ReqLogin
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -52,4 +54,16 @@ func (h *UserHandler) login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	user, err := h.usecase.GetUserByID(c.Request.Context(), uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	log.Printf("Returning user: %+v", user)
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }
