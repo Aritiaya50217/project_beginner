@@ -27,3 +27,11 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) FindByID(ctx context.Context, id uint) (*domain.User, error) {
+	var user domain.User
+	if err := r.db.WithContext(ctx).First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

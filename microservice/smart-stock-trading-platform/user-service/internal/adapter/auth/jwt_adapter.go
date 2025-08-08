@@ -25,3 +25,17 @@ func (j *JWTAuth) GenerateToken(ctx context.Context, userID uint) (string, error
 
 	return token.SignedString([]byte(j.secret))
 }
+
+func (j *JWTAuth) ValidateToken(ctx context.Context, token string) (uint, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return []byte(j.secret), nil
+	})
+
+	if err != nil || !t.Valid {
+		return 0, err
+	}
+
+	claims := t.Claims.(jwt.MapClaims)
+	uid := uint(claims["user_id"].(float64))
+	return uid, nil
+}
