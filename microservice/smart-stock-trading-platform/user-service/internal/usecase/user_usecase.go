@@ -41,3 +41,16 @@ func (u *UserUsecase) Register(ctx context.Context, email, password, firstname, 
 
 	return user, nil
 }
+
+func (u *UserUsecase) Login(ctx context.Context, email, password string) (string, error) {
+	user, err := u.repo.FindByEmail(ctx, email)
+	if err != nil || user == nil {
+		return "", errors.New("invalid email")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", err
+	}
+
+	return u.auth.GenerateToken(ctx, user.ID)
+}

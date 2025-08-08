@@ -18,6 +18,7 @@ func NewUserHandler(usecase *usecase.UserUsecase) *UserHandler {
 
 func (h *UserHandler) Routers(r *gin.RouterGroup) {
 	r.POST("/register", h.register)
+	r.POST("/login", h.login)
 }
 
 func (h *UserHandler) register(c *gin.Context) {
@@ -34,4 +35,21 @@ func (h *UserHandler) register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"id": user.ID})
+}
+
+func (h *UserHandler) login(c *gin.Context) {
+	var req utils.ReqLogin
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := h.usecase.Login(c.Request.Context(), req.Email, req.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
