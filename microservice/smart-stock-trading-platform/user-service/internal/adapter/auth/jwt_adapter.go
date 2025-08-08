@@ -10,35 +10,45 @@ import (
 )
 
 type jwtService struct {
-	secretKey string
+	secretKey       string
+	refreshDuration time.Duration
 }
 
 func NewJWTService(secretKey string) *jwtService {
-	return &jwtService{secretKey: secretKey}
+	return &jwtService{
+		secretKey:       secretKey,
+		refreshDuration: 24 * time.Hour,
+	}
 }
 
-func (j *jwtService) GenerateToken(ctx context.Context, userID uint, email string) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+type refreshClaims struct {
+	UserID uint `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func (j *jwtService) GenerateToken(ctx context.Context, userID uint) (string, error) {
+	exp := time.Now().Add(j.refreshDuration)
+	claims := &refreshClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(j.secretKey))
 }
 
 func (j *jwtService) ValidateToken(ctx context.Context, tokenString string) (uint, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &refreshClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.secretKey), nil
 	})
-
-	if err != nil || !token.Valid {
-		return 0, errors.New("invalid token")
+	if err != nil {
+		return 0, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if id, ok := claims["user_id"].(float64); ok {
-			return uint(id), nil
-		}
+	if claims, ok := token.Claims.(*refreshClaims); ok && token.Valid {
+		return claims.UserID, nil
 	}
 	return 0, errors.New("invalid claims")
 
@@ -58,4 +68,35 @@ func (j *jwtService) CheckPasswordHash(ctx context.Context, password, hash strin
 		return false
 	}
 	return true
+}
+
+// สร้าง Refresh Token เป็น JWT ที่มี userID และ expire
+func (j *jwtService) GenerateRefreshToken(ctx context.Context, userID uint) (string, error) {
+	expireTime := time.Now().Add(j.refreshDuration)
+	claims := &refreshClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expireTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(j.secretKey))
+}
+
+// ตรวจสอบและ validate Refresh Token คืน userID ถ้า valid
+func (j *jwtService) ValidateRefreshToken(ctx context.Context, tokenString string) (uint, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &refreshClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(j.secretKey), nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	if claims, ok := token.Claims.(*refreshClaims); ok && token.Valid {
+		return claims.UserID, nil
+	}
+
+	return 0, errors.New("invalid refresh token")
 }

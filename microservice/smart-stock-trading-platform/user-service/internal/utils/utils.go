@@ -1,8 +1,9 @@
 package utils
 
 type ReqRegister struct {
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
+	Email string `json:"email" binding:"required,email"`
+	// Password  string `json:"password" binding:"required"`
+	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }

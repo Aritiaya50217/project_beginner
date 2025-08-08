@@ -9,4 +9,5 @@ type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id uint) (*domain.User, error)
+	UpdateUser(ctx context.Context, user *domain.User) error
 }

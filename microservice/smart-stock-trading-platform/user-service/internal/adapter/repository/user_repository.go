@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"smart-stock-trading-platform-user-service/internal/domain"
 	"smart-stock-trading-platform-user-service/internal/port"
 
@@ -34,4 +35,23 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uint) (*domain.User
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepository) UpdateUser(ctx context.Context, user *domain.User) error {
+	tx := r.db.WithContext(ctx).Model(&domain.User{}).
+		Where("id = ?", user.ID).
+		Updates(domain.User{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		})
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return errors.New("no user updated")
+	}
+	return nil
 }
