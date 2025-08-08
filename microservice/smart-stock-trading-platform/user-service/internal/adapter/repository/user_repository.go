@@ -1,0 +1,29 @@
+package repository
+
+import (
+	"context"
+	"smart-stock-trading-platform-user-service/internal/domain"
+	"smart-stock-trading-platform-user-service/internal/port"
+
+	"gorm.io/gorm"
+)
+
+type UserRepository struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) port.UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
+	return r.db.WithContext(ctx).Create(&user).Error
+}
+
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	var user domain.User
+	if err := r.db.WithContext(ctx).Where("email = ? ", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
