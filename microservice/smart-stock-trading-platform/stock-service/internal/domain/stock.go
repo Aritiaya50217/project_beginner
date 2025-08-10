@@ -6,6 +6,7 @@ type Stock struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	Symbol    string    `gorm:"uniqueIndex;size:10" json:"symbol"`
 	Name      string    `gorm:"size:100" json:"name"`
+	BlockHash string    `json:"block_hash"` // เชื่อมกับ blockchain
 	LastPrice float64   `json:"last_price"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedAt time.Time `json:"created_at"`
