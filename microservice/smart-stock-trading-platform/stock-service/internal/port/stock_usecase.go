@@ -4,6 +4,6 @@ import (
 	"smart-stock-trading-platform-stock-service/internal/domain"
 )
 
-type MarketDataProvider interface {
-	GetQuote(symbol string) (*domain.StockQuote, error)
+type StockUsecase interface {
+	FetchQuote(symbol string) (*domain.StockQuote, error)
 }

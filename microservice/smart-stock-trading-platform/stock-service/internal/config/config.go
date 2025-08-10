@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -15,10 +16,11 @@ type Config struct {
 	SQLServerDB    string
 	JWTSecret      string
 	UserserviceUrl string
+	KafkaBrokers   []string
 }
 
 func LoadConfig() *Config {
-	return &Config{
+	cfg := &Config{
 		ServerPort:     os.Getenv("STOCK_SERVICE_PORT"),
 		SQLServerUser:  os.Getenv("STOCK_SQLSERVER_USER"),
 		SQLServerPass:  os.Getenv("STOCK_SQLSERVER_PASSWORD"),
@@ -27,7 +29,15 @@ func LoadConfig() *Config {
 		SQLServerDB:    os.Getenv("STOCK_SQLSERVER_DB"),
 		JWTSecret:      os.Getenv("JWT_SECRET"),
 		UserserviceUrl: os.Getenv("USER_SERVICE_URL"),
+		KafkaBrokers:   strings.Split(os.Getenv("KAFKA_BROKERS"), ","),
 	}
+
+	if len(cfg.KafkaBrokers) == 0 {
+		log.Fatal("KAFKA_BROKERS is not set")
+	}
+
+	return cfg
+
 }
 
 func SetTimeZone() {
