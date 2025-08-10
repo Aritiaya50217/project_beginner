@@ -7,6 +7,7 @@ import (
 	"os"
 	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
+	"time"
 )
 
 type FinnhubAdapter struct {
@@ -57,8 +58,11 @@ func (a *FinnhubAdapter) FetchQuote(symbol string) (*domain.StockQuote, error) {
 
 func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
 	quotes := []*domain.StockQuote{}
+	limiter := time.Tick(200 * time.Millisecond) // 5 requests per second
 
 	for _, symbol := range symbols {
+		<-limiter // รอ tick ก่อนยิง request
+		
 		quote, err := a.FetchQuote(symbol)
 		if err != nil {
 			return nil, err
@@ -66,4 +70,33 @@ func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*domain.StockQuote, er
 		quotes = append(quotes, quote)
 	}
 	return quotes, nil
+}
+
+// ดึงรายชื่อหุ้นจาก exchange เช่น "US" หรือ "NASDAQ"
+func (a *FinnhubAdapter) FetchSymbolList(exchange string) ([]string, error) {
+	url := fmt.Sprintf("https://finnhub.io/api/v1/stock/symbol?exchange=%s&token=%s", exchange, a.apiKey)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch symbols: %s", resp.Status)
+	}
+
+	var data []struct {
+		Symbol string `json:"symbol"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	symbols := []string{}
+	for _, val := range data {
+		symbols = append(symbols, val.Symbol)
+	}
+	return symbols, nil
 }

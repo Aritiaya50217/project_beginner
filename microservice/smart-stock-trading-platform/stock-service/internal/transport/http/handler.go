@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"smart-stock-trading-platform-stock-service/internal/port"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,12 +27,10 @@ func (h *StockHandler) GetQuote(c *gin.Context) {
 }
 
 func (h *StockHandler) GetAllQuote(c *gin.Context) {
-	symbols := c.QueryArray("symbol")
-	if len(symbols) == 0 {
-		symbols = []string{"AAPL", "GOOGL", "MSFT"} // default
-	}
+	exchange := c.DefaultQuery("exchange", "US")
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
 
-	quotes, err := h.usecase.FetchQuotes(symbols)
+	quotes, err := h.usecase.FetchAllQuotes(exchange, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

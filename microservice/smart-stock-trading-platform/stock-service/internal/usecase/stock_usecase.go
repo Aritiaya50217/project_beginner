@@ -23,3 +23,21 @@ func (u *stockUsecase) FetchQuote(symbol string) (*domain.StockQuote, error) {
 func (u *stockUsecase) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
 	return u.provider.FetchQuotes(symbols)
 }
+
+func (u *stockUsecase) FetchAllQuotes(exchange string, limit int) ([]*domain.StockQuote, error) {
+	symbols, err := u.provider.FetchSymbolList(exchange)
+	if err != nil {
+		return nil, err
+	}
+
+	if limit > 0 && len(symbols) > limit {
+		symbols = symbols[:limit]
+	}
+
+	quotes, err := u.provider.FetchQuotes(symbols)
+	if err != nil {
+		return nil, err
+	}
+
+	return quotes, nil
+}
