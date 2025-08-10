@@ -5,5 +5,6 @@ import (
 )
 
 type MarketDataProvider interface {
-	GetQuote(symbol string) (*domain.StockQuote, error)
+	FetchQuote(symbol string) (*domain.StockQuote, error)
+	FetchQuotes(symbols []string) ([]*domain.StockQuote, error)
 }

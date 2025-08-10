@@ -27,7 +27,7 @@ func NewFinnhubAdapter() port.MarketDataProvider {
 	}
 }
 
-func (a *FinnhubAdapter) GetQuote(symbol string) (*domain.StockQuote, error) {
+func (a *FinnhubAdapter) FetchQuote(symbol string) (*domain.StockQuote, error) {
 	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, a.apiKey)
 
 	resp, err := http.Get(url)
@@ -53,4 +53,17 @@ func (a *FinnhubAdapter) GetQuote(symbol string) (*domain.StockQuote, error) {
 		Open:      fq.OpenPrice,
 		PrevClose: fq.PrevClose,
 	}, nil
+}
+
+func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
+	quotes := []*domain.StockQuote{}
+
+	for _, symbol := range symbols {
+		quote, err := a.FetchQuote(symbol)
+		if err != nil {
+			return nil, err
+		}
+		quotes = append(quotes, quote)
+	}
+	return quotes, nil
 }

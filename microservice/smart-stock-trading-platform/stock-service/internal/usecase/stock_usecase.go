@@ -17,5 +17,9 @@ func NewStockUsecase(repo port.StockRepository, provider port.MarketDataProvider
 
 // ดึงข้อมูลหุ้นจากภายนอก (ยังไม่บันทึก DB)
 func (u *stockUsecase) FetchQuote(symbol string) (*domain.StockQuote, error) {
-	return u.provider.GetQuote(symbol)
+	return u.provider.FetchQuote(symbol)
+}
+
+func (u *stockUsecase) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
+	return u.provider.FetchQuotes(symbols)
 }

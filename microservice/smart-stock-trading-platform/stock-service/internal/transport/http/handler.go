@@ -24,3 +24,17 @@ func (h *StockHandler) GetQuote(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, quote)
 }
+
+func (h *StockHandler) GetAllQuote(c *gin.Context) {
+	symbols := c.QueryArray("symbol")
+	if len(symbols) == 0 {
+		symbols = []string{"AAPL", "GOOGL", "MSFT"} // default
+	}
+
+	quotes, err := h.usecase.FetchQuotes(symbols)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, quotes)
+}
