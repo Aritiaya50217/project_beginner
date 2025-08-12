@@ -17,6 +17,7 @@ type Config struct {
 	JWTSecret      string
 	UserserviceUrl string
 	KafkaBrokers   []string
+	FinnhubAPIKey  string
 }
 
 func LoadConfig() *Config {
@@ -30,6 +31,7 @@ func LoadConfig() *Config {
 		JWTSecret:      os.Getenv("JWT_SECRET"),
 		UserserviceUrl: os.Getenv("USER_SERVICE_URL"),
 		KafkaBrokers:   strings.Split(os.Getenv("KAFKA_BROKERS"), ","),
+		FinnhubAPIKey:  os.Getenv("FINNHUB_API_KEY"),
 	}
 
 	if len(cfg.KafkaBrokers) == 0 {

@@ -3,13 +3,13 @@ package domain
 import "time"
 
 type Stock struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	Symbol    string    `gorm:"uniqueIndex;size:10" json:"symbol"`
-	Name      string    `gorm:"size:100" json:"name"`
-	BlockHash string    `json:"block_hash"` // เชื่อมกับ blockchain
-	LastPrice float64   `json:"last_price"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	Symbol      string    `gorm:"uniqueIndex;size:10" json:"symbol"`
+	Name        string    `gorm:"size:100" json:"name"`
+	CompanyName string    `gorm:"size:100" json:"company_name"`
+	LastPrice   float64   `json:"last_price"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // ข้อมูล quote ที่มาจาก API ภายนอก (ไม่จำเป็นต้องบันทึก DB)
@@ -20,4 +20,19 @@ type StockQuote struct {
 	Low       float64 `json:"low"`
 	Open      float64 `json:"open"`
 	PrevClose float64 `json:"prevClose"`
+}
+
+type Company struct {
+	Country              string  `json:"country"`
+	Currency             string  `json:"currency"`
+	Exchange             string  `json:"exchange"`
+	Ipo                  string  `json:"ipo"`
+	MarketCapitalization float32     `json:"marketCapitalization"`
+	Name                 string  `json:"name"`
+	Phone                string  `json:"phone"`
+	ShareOutstanding     float32 `json:"shareOutstanding"`
+	Ticker               string  `json:"ticker"`
+	Weburl               string  `json:"weburl"`
+	Logo                 string  `json:"logo"`
+	FinnhubIndustry      string  `json:"finnhubIndustry"`
 }

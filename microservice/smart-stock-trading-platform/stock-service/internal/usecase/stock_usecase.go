@@ -41,3 +41,11 @@ func (u *stockUsecase) FetchAllQuotes(exchange string, limit int) ([]*domain.Sto
 
 	return quotes, nil
 }
+
+func (u *stockUsecase) FetchCompayny(symbol string) (*domain.Company, error) {
+	symbols, err := u.provider.FetchCompayny(symbol)
+	if err != nil {
+		return nil, err
+	}
+	return symbols, nil
+}

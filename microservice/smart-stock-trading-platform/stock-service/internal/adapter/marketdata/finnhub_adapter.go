@@ -1,6 +1,7 @@
 package marketdata
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,8 @@ import (
 	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
 	"time"
+
+	finnhub "github.com/Finnhub-Stock-API/finnhub-go/v2"
 )
 
 type FinnhubAdapter struct {
@@ -62,7 +65,7 @@ func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*domain.StockQuote, er
 
 	for _, symbol := range symbols {
 		<-limiter // รอ tick ก่อนยิง request
-		
+
 		quote, err := a.FetchQuote(symbol)
 		if err != nil {
 			return nil, err
@@ -99,4 +102,31 @@ func (a *FinnhubAdapter) FetchSymbolList(exchange string) ([]string, error) {
 		symbols = append(symbols, val.Symbol)
 	}
 	return symbols, nil
+}
+
+func (u *FinnhubAdapter) FetchCompayny(symbol string) (*domain.Company, error) {
+	cfg := finnhub.NewConfiguration()
+	cfg.AddDefaultHeader("X-Finnhub-Token", u.apiKey)
+	finnhubClient := finnhub.NewAPIClient(cfg).DefaultApi
+	company, _, err := finnhubClient.CompanyProfile2(context.Background()).Symbol(symbol).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	data := domain.Company{
+		Country:              *company.Country,
+		Currency:             *company.Currency,
+		Exchange:             *company.Exchange,
+		Ipo:                  *company.Ipo,
+		MarketCapitalization: *company.MarketCapitalization,
+		Name:                 *company.Name,
+		Phone:                *company.Phone,
+		ShareOutstanding:     *company.ShareOutstanding,
+		Ticker:               *company.Ticker,
+		Weburl:               *company.Weburl,
+		Logo:                 *company.Logo,
+		FinnhubIndustry:      *company.FinnhubIndustry,
+	}
+
+	return &data, nil
 }

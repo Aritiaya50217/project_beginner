@@ -37,3 +37,13 @@ func (h *StockHandler) GetAllQuote(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, quotes)
 }
+
+func (h *StockHandler) GetCompany(c *gin.Context) {
+	symbol := c.Param("symbol")
+	company, err := h.usecase.FetchCompayny(symbol)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid symbol"})
+		return
+	}
+	c.JSON(http.StatusOK, company)
+}
