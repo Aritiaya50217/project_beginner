@@ -47,3 +47,7 @@ func (h *StockHandler) GetCompany(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, company)
 }
+
+func (h *StockHandler) AddStock(c *gin.Context) {
+	c.JSON(http.StatusCreated, gin.H{"message": "add stock successfully"})
+}

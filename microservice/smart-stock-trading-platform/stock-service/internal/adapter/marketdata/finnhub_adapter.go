@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
+	"smart-stock-trading-platform-stock-service/internal/utils"
 	"time"
 
 	finnhub "github.com/Finnhub-Stock-API/finnhub-go/v2"
@@ -31,7 +31,7 @@ func NewFinnhubAdapter() port.MarketDataProvider {
 	}
 }
 
-func (a *FinnhubAdapter) FetchQuote(symbol string) (*domain.StockQuote, error) {
+func (a *FinnhubAdapter) FetchQuote(symbol string) (*utils.StockQuote, error) {
 	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, a.apiKey)
 
 	resp, err := http.Get(url)
@@ -49,7 +49,7 @@ func (a *FinnhubAdapter) FetchQuote(symbol string) (*domain.StockQuote, error) {
 		return nil, err
 	}
 
-	return &domain.StockQuote{
+	return &utils.StockQuote{
 		Symbol:    symbol,
 		Price:     fq.CurrentPrice,
 		High:      fq.HighPrice,
@@ -59,8 +59,8 @@ func (a *FinnhubAdapter) FetchQuote(symbol string) (*domain.StockQuote, error) {
 	}, nil
 }
 
-func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
-	quotes := []*domain.StockQuote{}
+func (a *FinnhubAdapter) FetchQuotes(symbols []string) ([]*utils.StockQuote, error) {
+	quotes := []*utils.StockQuote{}
 	limiter := time.Tick(200 * time.Millisecond) // 5 requests per second
 
 	for _, symbol := range symbols {
@@ -104,7 +104,7 @@ func (a *FinnhubAdapter) FetchSymbolList(exchange string) ([]string, error) {
 	return symbols, nil
 }
 
-func (u *FinnhubAdapter) FetchCompayny(symbol string) (*domain.Company, error) {
+func (u *FinnhubAdapter) FetchCompayny(symbol string) (*utils.Company, error) {
 	cfg := finnhub.NewConfiguration()
 	cfg.AddDefaultHeader("X-Finnhub-Token", u.apiKey)
 	finnhubClient := finnhub.NewAPIClient(cfg).DefaultApi
@@ -113,7 +113,7 @@ func (u *FinnhubAdapter) FetchCompayny(symbol string) (*domain.Company, error) {
 		return nil, err
 	}
 
-	data := domain.Company{
+	data := utils.Company{
 		Country:              *company.Country,
 		Currency:             *company.Currency,
 		Exchange:             *company.Exchange,

@@ -1,12 +1,10 @@
 package port
 
-import (
-	"smart-stock-trading-platform-stock-service/internal/domain"
-)
+import "smart-stock-trading-platform-stock-service/internal/utils"
 
 type StockUsecase interface {
-	FetchQuote(symbol string) (*domain.StockQuote, error)
-	FetchQuotes(symbols []string) ([]*domain.StockQuote, error)
-	FetchAllQuotes(exchange string, limit int) ([]*domain.StockQuote, error)
-	FetchCompayny(symbol string) (*domain.Company, error)
+	FetchQuote(symbol string) (*utils.StockQuote, error)
+	FetchQuotes(symbols []string) ([]*utils.StockQuote, error)
+	FetchAllQuotes(exchange string, limit int) ([]*utils.StockQuote, error)
+	FetchCompayny(symbol string) (*utils.Company, error)
 }

@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"context"
 	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
+	"smart-stock-trading-platform-stock-service/internal/utils"
 )
 
 type stockUsecase struct {
@@ -16,15 +18,15 @@ func NewStockUsecase(repo port.StockRepository, provider port.MarketDataProvider
 }
 
 // ดึงข้อมูลหุ้นจากภายนอก (ยังไม่บันทึก DB)
-func (u *stockUsecase) FetchQuote(symbol string) (*domain.StockQuote, error) {
+func (u *stockUsecase) FetchQuote(symbol string) (*utils.StockQuote, error) {
 	return u.provider.FetchQuote(symbol)
 }
 
-func (u *stockUsecase) FetchQuotes(symbols []string) ([]*domain.StockQuote, error) {
+func (u *stockUsecase) FetchQuotes(symbols []string) ([]*utils.StockQuote, error) {
 	return u.provider.FetchQuotes(symbols)
 }
 
-func (u *stockUsecase) FetchAllQuotes(exchange string, limit int) ([]*domain.StockQuote, error) {
+func (u *stockUsecase) FetchAllQuotes(exchange string, limit int) ([]*utils.StockQuote, error) {
 	symbols, err := u.provider.FetchSymbolList(exchange)
 	if err != nil {
 		return nil, err
@@ -42,10 +44,14 @@ func (u *stockUsecase) FetchAllQuotes(exchange string, limit int) ([]*domain.Sto
 	return quotes, nil
 }
 
-func (u *stockUsecase) FetchCompayny(symbol string) (*domain.Company, error) {
+func (u *stockUsecase) FetchCompayny(symbol string) (*utils.Company, error) {
 	symbols, err := u.provider.FetchCompayny(symbol)
 	if err != nil {
 		return nil, err
 	}
 	return symbols, nil
+}
+
+func (u *stockUsecase) Create(ctx context.Context, stock *domain.Stock) error {
+return nil
 }
