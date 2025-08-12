@@ -20,11 +20,8 @@ func NewOrderHandler(usecase port.OrderUsecase, stockUsecase port.StockUsecase) 
 
 func (h *orderHandler) CreateOrder(c *gin.Context) {
 	// ดึง userID จาก context (เซ็ตโดย middleware)
-	userIDFromToken, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
+	userIDFromToken := utils.CheckUserFromToken(c)
+
 	var req utils.Order
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -40,7 +37,7 @@ func (h *orderHandler) CreateOrder(c *gin.Context) {
 
 	// price ต้องมาจาก stock.LastPrice * req.total
 	order := domain.Order{
-		UserID:     userIDFromToken.(int),
+		UserID:     userIDFromToken,
 		StockID:    req.StockID,
 		TotalStock: req.TotalStock,
 		TotalPrice: stock.LastPrice * float64(req.TotalStock),
