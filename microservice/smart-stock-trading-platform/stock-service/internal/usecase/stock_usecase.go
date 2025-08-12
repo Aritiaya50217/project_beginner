@@ -71,3 +71,7 @@ func (u *stockUsecase) AddStockBySymbol(ctx context.Context, symbol string) erro
 		LastPrice: stock.Price,
 	})
 }
+
+func (u *stockUsecase) FindStockByID(ctx context.Context, id int) (*domain.Stock, error) {
+	return u.repo.FindStockByID(ctx, id)
+}
