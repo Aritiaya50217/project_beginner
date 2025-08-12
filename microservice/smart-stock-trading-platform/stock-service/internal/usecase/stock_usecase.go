@@ -75,3 +75,7 @@ func (u *stockUsecase) AddStockBySymbol(ctx context.Context, symbol string) erro
 func (u *stockUsecase) FindStockByID(ctx context.Context, id int) (*domain.Stock, error) {
 	return u.repo.FindStockByID(ctx, id)
 }
+
+func (u *stockUsecase) DeleteStock(ctx context.Context, id int) error {
+	return u.repo.DeleteStock(ctx, id)
+}

@@ -13,4 +13,5 @@ type StockUsecase interface {
 	FetchCompayny(symbol string) (*utils.Company, error)
 	AddStockBySymbol(ctx context.Context, symbol string) error
 	FindStockByID(ctx context.Context, id int) (*domain.Stock, error)
+	DeleteStock(ctx context.Context, id int) error
 }

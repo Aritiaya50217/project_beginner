@@ -38,3 +38,7 @@ func (r *stockRepository) FindStockByID(ctx context.Context, id int) (*domain.St
 	}
 	return &stock, nil
 }
+
+func (r *stockRepository) DeleteStock(ctx context.Context, id int) error {
+	return r.db.WithContext(ctx).Delete(&domain.Stock{ID: id}).Error
+}

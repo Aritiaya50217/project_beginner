@@ -92,3 +92,17 @@ func (h *StockHandler) GetStockByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, stock)
 }
+
+func (h *StockHandler) DeleteStock(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	if err := h.usecase.DeleteStock(c, id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "deleted successfully."})
+}
