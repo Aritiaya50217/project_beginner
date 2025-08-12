@@ -42,3 +42,23 @@ func (r *stockRepository) FindStockByID(ctx context.Context, id int) (*domain.St
 func (r *stockRepository) DeleteStock(ctx context.Context, id int) error {
 	return r.db.WithContext(ctx).Delete(&domain.Stock{ID: id}).Error
 }
+
+func (r *stockRepository) GetAllStock(ctx context.Context, offset, limit int) ([]*domain.Stock, int64, error) {
+	var stocks []*domain.Stock
+	var total int64
+
+	// นับจำนวนทั้งหมด
+	if err := r.db.WithContext(ctx).Model(&domain.Stock{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	err := r.db.WithContext(ctx).
+		Offset(offset).
+		Limit(limit).
+		Find(&stocks).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return stocks, total, nil
+}

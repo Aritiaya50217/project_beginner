@@ -79,3 +79,7 @@ func (u *stockUsecase) FindStockByID(ctx context.Context, id int) (*domain.Stock
 func (u *stockUsecase) DeleteStock(ctx context.Context, id int) error {
 	return u.repo.DeleteStock(ctx, id)
 }
+
+func (u *stockUsecase) GetAllStock(ctx context.Context, offset, limit int) ([]*domain.Stock, int64, error) {
+	return u.repo.GetAllStock(ctx, offset, limit)
+}

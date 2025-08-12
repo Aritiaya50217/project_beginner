@@ -106,3 +106,31 @@ func (h *StockHandler) DeleteStock(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "deleted successfully."})
 }
+
+func (h *StockHandler) GetAllStock(c *gin.Context) {
+	offsetStr := c.Query("offset")
+	limitStr := c.Query("limit")
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	stocks, total, err := h.usecase.GetAllStock(c, offset, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get bookings"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data":       stocks,
+		"total":      total,
+		"offset":     offset,
+		"limit":      limit,
+		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
+	})
+}
