@@ -71,19 +71,6 @@ func (h *StockHandler) GetStockByID(c *gin.Context) {
 		return
 	}
 
-	// ดึง userID จาก context (เซ็ตโดย middleware)
-	userIDFromToken, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	// เช็คว่า userID ใน token ต้องตรงกับ param id
-	if userIDFromToken.(int) != id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden: you can only access your own user data"})
-		return
-	}
-
 	stock, err := h.usecase.FindStockByID(c, id)
 	if err != nil {
 		log.Printf("error: %+v", err)
