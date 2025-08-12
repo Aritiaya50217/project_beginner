@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
 	"smart-stock-trading-platform-stock-service/internal/utils"
@@ -52,6 +53,21 @@ func (u *stockUsecase) FetchCompayny(symbol string) (*utils.Company, error) {
 	return symbols, nil
 }
 
-func (u *stockUsecase) Create(ctx context.Context, stock *domain.Stock) error {
-return nil
+// AddStockBySymbol จะค้นหา symbol ใน Finnhub และบันทึกลง DB ถ้าเจอ
+func (u *stockUsecase) AddStockBySymbol(ctx context.Context, symbol string) error {
+	// 1. ดึงข้อมูลหุ้นจาก Finnhub API
+	stock, err := u.FetchQuote(symbol)
+	if err != nil {
+		return err
+	}
+	// 2. หา symbol ที่ต้องการ
+	if stock == nil {
+		return errors.New("symbol not found")
+	}
+
+	return u.repo.Create(ctx, &domain.Stock{
+		Symbol:    stock.Symbol,
+		Name:      stock.Symbol,
+		LastPrice: stock.Price,
+	})
 }

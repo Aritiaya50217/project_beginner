@@ -49,5 +49,16 @@ func (h *StockHandler) GetCompany(c *gin.Context) {
 }
 
 func (h *StockHandler) AddStock(c *gin.Context) {
+	symbol := c.Param("symbol")
+	if symbol == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid symbol"})
+		return
+	}
+
+	if err := h.usecase.AddStockBySymbol(c, symbol); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{"message": "add stock successfully"})
 }
