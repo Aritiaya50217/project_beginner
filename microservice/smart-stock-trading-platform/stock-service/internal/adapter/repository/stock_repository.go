@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"log"
 	"smart-stock-trading-platform-stock-service/internal/domain"
 	"smart-stock-trading-platform-stock-service/internal/port"
 
@@ -33,7 +32,6 @@ func (r *stockRepository) FindBySymbol(ctx context.Context, symbol string) (*dom
 func (r *stockRepository) FindStockByID(ctx context.Context, id int) (*domain.Stock, error) {
 	var stock domain.Stock
 	if err := r.db.WithContext(ctx).First(&stock, id).Error; err != nil {
-		log.Printf("error: %+v", err)
 		return nil, err
 	}
 	return &stock, nil
