@@ -33,6 +33,18 @@ services:
     networks:
       - app-network
 
+  kafka-init:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka-init
+    depends_on:
+      - broker1
+    volumes:
+      - ./kafka-init:/kafka-init
+    entrypoint: ["/kafka-init/create_topics.sh"]
+    networks:
+      - app-network
+
+
   user-service:
     build:
       context: ./user-service
@@ -69,5 +81,6 @@ services:
       - .env
     depends_on:
       - broker1
+      - kafka-init
     networks:
       - app-network
