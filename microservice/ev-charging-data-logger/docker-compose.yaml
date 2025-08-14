@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: ev-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - ev_network
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MARIADB_USER}", "-p${MARIADB_PASSWORD}"]
+      interval: 5s
+      retries: 10
+      start_period: 10s
+      timeout: 5s
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - ev_network
+
+networks:
+  ev_network:
+
+volumes:
+  mariadb_data:
