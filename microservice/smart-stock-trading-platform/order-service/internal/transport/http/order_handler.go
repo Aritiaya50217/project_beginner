@@ -18,16 +18,29 @@ func NewOrderHandler(usecase usecase.OrderUsecase) *OrderHandler {
 }
 
 func (h *OrderHandler) CreateOrder(c *gin.Context) {
+	// Get user ID from JWT token
+	userIDFromToken, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userIDInt := userIDFromToken.(int)
+
 	var order domain.Order
 	if err := c.ShouldBindJSON(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	order.UserID = uint(userIDInt)
+	order.Status = domain.Pending
+	order.Price = float64(order.Quantity) * float64(order.Price)
+
 	if err := h.usecase.CreateOrder(c, &order); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusCreated, order)
 }
 
