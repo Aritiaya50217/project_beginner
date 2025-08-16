@@ -10,7 +10,7 @@ import (
 type OrderUsecase interface {
 	CreateOrder(ctx context.Context, order *domain.Order) error
 	GetOrder(ctx context.Context, id uint) (*domain.Order, error)
-	GetOrdersByUser(ctx context.Context, userID uint) ([]*domain.Order, error)
+	GetOrdersByUser(ctx context.Context, userID uint, offset, limit int64) ([]*domain.Order, int64, error)
 }
 
 type orderUsecase struct {
@@ -33,6 +33,6 @@ func (u *orderUsecase) GetOrder(ctx context.Context, id uint) (*domain.Order, er
 	return u.repo.FindByID(id)
 }
 
-func (u *orderUsecase) GetOrdersByUser(ctx context.Context, userID uint) ([]*domain.Order, error) {
-	return u.repo.FindByUserID(userID)
+func (u *orderUsecase) GetOrdersByUser(ctx context.Context, userID uint, offset, limit int64) ([]*domain.Order, int64, error) {
+	return u.repo.FindByUserID(userID, offset, limit)
 }

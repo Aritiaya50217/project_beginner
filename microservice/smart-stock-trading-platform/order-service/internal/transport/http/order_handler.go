@@ -56,10 +56,26 @@ func (h *OrderHandler) GetOrder(c *gin.Context) {
 
 func (h *OrderHandler) GetOrdersByUser(c *gin.Context) {
 	userID, _ := strconv.Atoi(c.Param("user_id"))
-	orders, err := h.usecase.GetOrdersByUser(c, uint(userID))
+	offset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil {
+		offset = 0
+	}
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		limit = 10
+	}
+
+	orders, total, err := h.usecase.GetOrdersByUser(c, uint(userID), int64(offset), int64(limit))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, orders)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":       orders,
+		"total":      total,
+		"offset":     offset,
+		"limit":      limit,
+		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
+	})
 }
