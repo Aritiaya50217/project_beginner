@@ -22,7 +22,6 @@ func NewOrderUsecase(repo port.OrderRepository) OrderUsecase {
 }
 
 func (u *orderUsecase) CreateOrder(ctx context.Context, order *domain.Order) error {
-	order.Status = domain.StatusPending
 	if err := u.repo.Create(order); err != nil {
 		utils.ErrorLogger.Printf("Failed to create order: %+v, error: %v", order, err)
 		return err
