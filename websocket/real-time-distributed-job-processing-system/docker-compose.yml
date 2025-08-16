@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    command: ["./api"]
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://appuser:secret@postgres:5432/appdb?sslmode=disable
+      REDIS_ADDR: redis:6379
+      JWT_SECRET: mysecretkey
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    build: .
+    command: ["./worker"]
+    environment:
+      DATABASE_URL: postgres://appuser:secret@postgres:5432/appdb?sslmode=disable
+      REDIS_ADDR: redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
