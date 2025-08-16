@@ -11,7 +11,6 @@ import (
 	"time"
 
 	finnhub "github.com/Finnhub-Stock-API/finnhub-go/v2"
-	"go.uber.org/zap"
 )
 
 type FinnhubAdapter struct {
@@ -37,13 +36,11 @@ func (a *FinnhubAdapter) FetchQuote(symbol string) (*utils.StockQuote, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		utils.Logger.Error("error : ", zap.Error(err))
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		utils.Logger.Error("error fetching data: status", zap.Error(err))
 		return nil, fmt.Errorf("error fetching data: status %d", resp.StatusCode)
 	}
 
@@ -83,7 +80,6 @@ func (a *FinnhubAdapter) FetchSymbolList(exchange string) ([]string, error) {
 	url := fmt.Sprintf("https://finnhub.io/api/v1/stock/symbol?exchange=%s&token=%s", exchange, a.apiKey)
 	resp, err := http.Get(url)
 	if err != nil {
-		utils.Logger.Error("error fetch symbol list", zap.Error(err))
 		return nil, err
 	}
 
@@ -114,7 +110,6 @@ func (u *FinnhubAdapter) FetchCompayny(symbol string) (*utils.Company, error) {
 	finnhubClient := finnhub.NewAPIClient(cfg).DefaultApi
 	company, _, err := finnhubClient.CompanyProfile2(context.Background()).Symbol(symbol).Execute()
 	if err != nil {
-		utils.Logger.Error("failed to fetch company", zap.Error(err))
 		return nil, err
 	}
 

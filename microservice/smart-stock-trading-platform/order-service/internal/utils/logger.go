@@ -1,14 +1,18 @@
 package utils
 
-import "go.uber.org/zap"
+import (
+	"log"
+	"os"
+)
 
-var Logger *zap.Logger
+var (
+	InfoLogger  *log.Logger
+	ErrorLogger *log.Logger
+)
 
 func InitLogger() {
-	logs, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-
-	Logger = logs
+	InfoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
+
+

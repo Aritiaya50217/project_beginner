@@ -4,6 +4,7 @@ import (
 	"context"
 	"smart-stock-trading-platform-order-service/internal/domain"
 	"smart-stock-trading-platform-order-service/internal/port"
+	"smart-stock-trading-platform-order-service/internal/utils"
 )
 
 type OrderUsecase interface {
@@ -13,22 +14,18 @@ type OrderUsecase interface {
 }
 
 type orderUsecase struct {
-	repo      port.OrderRepository
-	publisher port.EventPublisher
+	repo port.OrderRepository
 }
 
-func NewOrderUsecase(repo port.OrderRepository, publisher port.EventPublisher) OrderUsecase {
-	return &orderUsecase{repo: repo, publisher: publisher}
+func NewOrderUsecase(repo port.OrderRepository) OrderUsecase {
+	return &orderUsecase{repo: repo}
 }
 
 func (u *orderUsecase) CreateOrder(ctx context.Context, order *domain.Order) error {
 	order.Status = domain.StatusPending
 	if err := u.repo.Create(order); err != nil {
+		utils.ErrorLogger.Printf("Failed to create order: %+v, error: %v", order, err)
 		return err
-	}
-	// publisher
-	if u.publisher != nil {
-		return u.publisher.PublishOrderCreated(order)
 	}
 	return nil
 }

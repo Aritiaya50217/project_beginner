@@ -14,8 +14,6 @@ type Config struct {
 	SQLServerPort string
 	SQLServerDB   string
 	JWTSecret     string
-	KafkaBroker   string
-	KafkaTopic    string
 }
 
 func LoadConfig() *Config {
@@ -27,8 +25,6 @@ func LoadConfig() *Config {
 		SQLServerPort: os.Getenv("ORDER_SQLSERVER_PORT"),
 		SQLServerDB:   os.Getenv("ORDER_SQLSERVER_DB"),
 		JWTSecret:     os.Getenv("JWT_SECRET"),
-		KafkaBroker:   os.Getenv("KAFKA_BROKER"),
-		KafkaTopic:    os.Getenv("KAFKA_TOPIC"),
 	}
 }
 
