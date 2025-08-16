@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"smart-stock-trading-platform-order-service/internal/domain"
 	"smart-stock-trading-platform-order-service/internal/port"
 
@@ -44,4 +45,8 @@ func (r *OrderRepository) FindByUserID(userID uint, offset, limit int64) ([]*dom
 		return nil, 0, err
 	}
 	return orders, total, nil
+}
+
+func (r *OrderRepository) DeleteOrder(ctx context.Context, id uint) error {
+	return r.db.WithContext(ctx).Delete(&domain.Order{ID: id}).Error
 }

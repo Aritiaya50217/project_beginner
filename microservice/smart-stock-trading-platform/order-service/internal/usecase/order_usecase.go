@@ -11,6 +11,7 @@ type OrderUsecase interface {
 	CreateOrder(ctx context.Context, order *domain.Order) error
 	GetOrder(ctx context.Context, id uint) (*domain.Order, error)
 	GetOrdersByUser(ctx context.Context, userID uint, offset, limit int64) ([]*domain.Order, int64, error)
+	DeleteOrder(ctx context.Context, id uint) error
 }
 
 type orderUsecase struct {
@@ -35,4 +36,8 @@ func (u *orderUsecase) GetOrder(ctx context.Context, id uint) (*domain.Order, er
 
 func (u *orderUsecase) GetOrdersByUser(ctx context.Context, userID uint, offset, limit int64) ([]*domain.Order, int64, error) {
 	return u.repo.FindByUserID(userID, offset, limit)
+}
+
+func (u *orderUsecase) DeleteOrder(ctx context.Context, id uint) error {
+	return u.repo.DeleteOrder(ctx, id)
 }

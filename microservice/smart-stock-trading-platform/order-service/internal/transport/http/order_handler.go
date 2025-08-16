@@ -79,3 +79,38 @@ func (h *OrderHandler) GetOrdersByUser(c *gin.Context) {
 		"totalPages": (total + int64(limit) - 1) / int64(limit), // คำนวณจำนวนหน้า
 	})
 }
+
+func (h *OrderHandler) DeleteOrder(c *gin.Context) {
+	// Get user ID from JWT token
+	userIDFromToken, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userIDInt := userIDFromToken.(int)
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	order, err := h.usecase.GetOrder(c, uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "id is not found"})
+		return
+	}
+
+	if order.UserID != uint(userIDInt) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "permission denied"})
+		return
+	}
+
+	if err := h.usecase.DeleteOrder(c, uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "deleted successfully."})
+
+}
