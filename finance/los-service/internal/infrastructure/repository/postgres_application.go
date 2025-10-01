@@ -17,16 +17,18 @@ func NewPostgresApplication(conn *pgx.Conn) *PostgresApplicationRepo {
 }
 
 func (r *PostgresApplicationRepo) Insert(app *domain.Application) (int, error) {
-	var id int
-	err := r.Conn.QueryRow(context.Background(),
-		`INSERT INTO applications (customer_id, amount, term, status)
-         VALUES ($1, $2, $3, $4) RETURNING id`,
-		app.CustomerID, app.Amount, app.Term, app.Status).Scan(&id)
+	query := `
+        INSERT INTO applications (customer_id, amount, term, status)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, created_at
+    `
+	err := r.Conn.QueryRow(context.Background(), query, app.CustomerID, app.Amount, app.Term, app.Status).
+		Scan(&app.ID, &app.CreatedAt)
 	if err != nil {
 		log.Printf("failed to insert application: %v", err)
 		return 0, err
 	}
-	return id, nil
+	return app.ID, nil
 }
 
 func (r *PostgresApplicationRepo) FindByID(id int64) (*domain.Application, error) {

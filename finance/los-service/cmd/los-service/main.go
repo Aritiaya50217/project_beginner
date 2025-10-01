@@ -32,7 +32,7 @@ func main() {
 
 	// --- Service ---
 	customerService := application.NewCustomerService(customerRepo)
-	applicationService := application.NewApplicationService(applicationRepo)
+	applicationService := application.NewApplicationService(applicationRepo, customerService)
 
 	// --- Handlers ---
 	applicationHandler := handler.NewHandler(applicationService, customerService, tarantoolConn)

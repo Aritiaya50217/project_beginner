@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"log"
 	"los-service/internal/app"
 	"los-service/internal/domain"
 	"los-service/internal/infrastructure/cache"
 
 	"net/http"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -33,47 +31,18 @@ func (h *Handler) Health(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SubmitApplication(c *fiber.Ctx) error {
-	var req domain.Application
-
-	if err := c.BodyParser(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-	// create customer entity
-	customer := &domain.Customer{
-		Name: req.CustomerName,
+	var app domain.Application
+	if err := c.BodyParser(&app); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	// insert customer
-	customerID, err := h.CustomerService.CreateCustomer(customer)
-	if err != nil {
-		log.Println("CreateCustomer error:", err)
-		return fiber.NewError(fiber.StatusInternalServerError, "Failed to create customer")
+	if err := h.AppService.SubmitApplication(&app); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	// create application entity
-	application := &domain.Application{
-		CustomerID: customerID,
-		Amount:     req.Amount,
-		Term:       req.Term,
-		Status:     "PENDING",
-	}
-
-	// insert application
-	applicationID, err := h.AppService.SubmitApplication(application)
-	if err != nil {
-		log.Println("SubmitApplication error:", err)
-		return fiber.NewError(fiber.StatusInternalServerError, "Failed to submit application")
-	}
-
-	// cache to tarantool
-	cacheKey := "app_" + strconv.Itoa(applicationID)
-	if err := h.Cache.Set(cacheKey, application); err != nil {
-		log.Println("Cache Set error: ", err)
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"application_id": applicationID,
-		"customer_id":    customerID,
-		"status":         application.Status,
-	})
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success"})
 }
