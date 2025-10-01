@@ -1,0 +1,40 @@
+# ======================
+# Go build
+# ======================
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# ======================
+# Dependency / Vendor
+# ======================
+vendor/
+go.sum
+# go.mod ก็อาจ ignore ได้ ถ้าใช้ go modules ตาม policy ของทีม
+
+# ======================
+# IDE / Editor
+# ======================
+.vscode/
+.idea/
+*.iml
+*.swp
+.DS_Store
+
+# ======================
+# Docker
+# ======================
+docker-compose.override.yml
+*.log
+*.pid
+
+# ======================
+# Environment
+# ======================
+.env
+.env.local
+.env.*.local
