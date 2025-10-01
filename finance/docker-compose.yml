@@ -1,10 +1,15 @@
+version: "3.9"
+
 services:
   los-service:
     build:
       context: ./los-service
       dockerfile: Dockerfile
+      args:
+        BUILD_TAGS: go_tarantool_ssl_disable
+    command: ./los-service
     env_file:
-      - ./.env    # ชี้ไปที่ root/.env
+      - ./.env     # โหลด env จาก root/.env
     ports:
       - "${PORT}:${PORT}"
     depends_on:
@@ -15,22 +20,27 @@ services:
 
   postgres:
     image: postgres:15
+    container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      TZ: Asia/Bangkok  
     ports:
       - "5433:5432"
+    volumes:
+      - ./los-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - finance-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U finance_user -d finance_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   tarantool:
     image: tarantool/tarantool:2
+    container_name: tarantool
     ports:
       - "${TARANTOOL_PORT}:${TARANTOOL_PORT}"
     networks:

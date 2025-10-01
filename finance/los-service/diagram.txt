@@ -1,0 +1,26 @@
+[Client / Frontend]
+       |
+       v
+[LOS Service - Fiber Handler]
+  SubmitApplication()
+       |
+       v
+[ApplicationService / CustomerService]
+  - Validate input
+  - Call Credit Bureau (optional)
+  - Create Customer if new
+       |
+       v
+[Repository Layer - Postgres]
+  - PostgresCustomer.Insert() → customers table
+  - PostgresApplication.Insert() → applications table
+       |
+       v
+[Cache / External Layer]
+  - TarantoolCache (optional)
+  - Credit Bureau Mock (optional)
+       |
+       v
+[Response to Client]
+  - 200 OK / 201 Created
+  - Application ID, Customer ID

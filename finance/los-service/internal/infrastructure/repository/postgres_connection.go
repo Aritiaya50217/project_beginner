@@ -23,12 +23,13 @@ func ConnectPostgres() *pgx.Conn {
 
 	// hide password in log
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, pass, host, port, db)
-	dsnSafe := fmt.Sprintf("postgres://%s:****@%s:%s/%s", user, host, port, db)
+	// dsnSafe := fmt.Sprintf("postgres://%s:****@%s:%s/%s", user, host, port, db)
+	fmt.Println(dsn)
 
 	var conn *pgx.Conn
 	var err error
 	for i := 0; i < 10; i++ {
-		log.Printf("Trying to connect to Postgres: %s", dsnSafe)
+		// log.Printf("Trying to connect to Postgres: %s", dsnSafe)
 		conn, err = pgx.Connect(context.Background(), dsn)
 		if err == nil {
 			log.Println("Connected to Postgres!")

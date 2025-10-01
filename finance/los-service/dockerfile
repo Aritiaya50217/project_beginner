@@ -1,6 +1,6 @@
-# syntax=docker/dockerfile:1
-
+# Stage 1: Build
 FROM golang:1.24 AS builder
+
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -8,10 +8,18 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o los-service ./cmd/los-service
+# ใช้ build tags จาก docker-compose
+ARG BUILD_TAGS
+RUN go build -tags "${BUILD_TAGS}" -o los-service ./cmd/los-service
 
-FROM alpine:3.18
-WORKDIR /root/
+# Stage 2: Runtime
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
 COPY --from=builder /app/los-service .
-EXPOSE 8080
+
+ENV PORT=8080
+EXPOSE ${PORT}
+
 CMD ["./los-service"]
