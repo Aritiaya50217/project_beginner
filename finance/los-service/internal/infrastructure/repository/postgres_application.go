@@ -28,6 +28,7 @@ func (r *PostgresApplicationRepo) Insert(app *domain.Application) (int, error) {
 		log.Printf("failed to insert application: %v", err)
 		return 0, err
 	}
+	
 	return app.ID, nil
 }
 

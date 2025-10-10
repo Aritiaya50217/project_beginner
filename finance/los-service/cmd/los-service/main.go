@@ -39,12 +39,11 @@ func main() {
 
 	// Routers
 	app := fiber.New()
-	api := app.Group("/api/v1")
-	api.Get("/health", applicationHandler.Health)
-	api.Post("/applications", applicationHandler.SubmitApplication)
+	app.Get("/health", applicationHandler.Health)
+	app.Post("/applications", applicationHandler.SubmitApplication)
 	// api.Get("/applications/:id", applicationHandler.GetApplicationByID)
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("LOSSERVICE_PORT")
 	if port == "" {
 		port = "8080"
 	}
