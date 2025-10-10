@@ -1,0 +1,90 @@
+version: "3.9"
+
+services:
+  los-service:
+    build:
+      context: ./los-service
+      dockerfile: Dockerfile
+      args:
+        BUILD_TAGS: go_tarantool_ssl_disable
+    command: ./los-service
+    env_file:
+      - ./.env     # โหลด env จาก root/.env
+    environment:
+      TZ: Asia/Bangkok
+    ports:
+      - "${LOSSERVICE_PORT}:${LOSSERVICE_PORT}"
+    depends_on:
+      - postgres
+      - tarantool
+    networks:
+      - finance-net
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: Asia/Bangkok  
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./los-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - finance-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tarantool:
+    image: tarantool/tarantool:2
+    container_name: tarantool
+    ports:
+      - "${TARANTOOL_PORT}:${TARANTOOL_PORT}"
+    environment:
+      TZ: Asia/Bangkok
+    networks:
+      - finance-net
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+      args:
+        BUILD_TAGS: go_tarantool_ssl_disable
+    command: ./user-service
+    env_file:
+      - ./.env     # โหลด env จาก root/.env
+    environment:
+      TZ: Asia/Bangkok
+    ports:
+      - "${USERSERVICE_PORT}:${USERSERVICE_PORT}"
+    networks:
+      - finance-net
+
+  kong:
+    image: kong:3
+    container_name: kong
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      
+    depends_on:
+      - los-service
+      - user-service
+    ports:
+      - "8000:8000"  # HTTP proxy
+      - "8443:8443"  # HTTPS proxy
+    volumes:
+      - ./kong/kong.yml:/kong/kong.yml
+    networks:
+    - finance-net
+
+
+networks:
+  finance-net:
+    driver: bridge
