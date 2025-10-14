@@ -1,0 +1,36 @@
+ประเภทของ API Proxy
+    1. Forward Proxy (Client-side Proxy)
+        หน้าที่: ทำหน้าที่แทน client ออกไป request กับ server
+        ลักษณะ: Client ต้อง config ให้ส่ง request ผ่าน proxy
+        Use case:
+            - ใช้ bypass firewall / geo-restriction
+            - Cache request เพื่อลด traffic
+            - Log หรือ monitor traffic ของ client
+
+    2. Reverse Proxy (Server-side Proxy)
+        หน้าที่: ทำหน้าที่แทน server รับ request จาก client แล้ว forward ไปยัง backend server
+        ลักษณะ: Client ไม่รู้ว่ามี backend จริง ๆ กี่ตัว
+        Use case:
+            - Load balancing / failover
+            - SSL termination / HTTPS offloading
+            - Caching / Compression / Security   
+
+    3. API Gateway
+        หน้าที่: เป็น reverse proxy + extra features สำหรับ microservices
+        ลักษณะ: Forward request ไปหลาย backend ตาม route, apply middleware
+        Use case:
+            - Centralized routing / authentication / logging
+            - Rate limiting / Circuit breaker / Transformation
+            - Aggregate responses จากหลาย microservices
+
+    4. Transparent Proxy
+        หน้าที่: Client ไม่ต้อง config proxy, network ทำให้ traffic ผ่าน proxy โดยอัตโนมัติ
+        Use case:
+            - Monitoring / caching traffic ขององค์กร
+            - Content filtering                    
+
+-----------------------------------------
+generate token
+
+- go run generate_jwt/main.go
+
