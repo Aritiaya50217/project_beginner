@@ -5,6 +5,7 @@ import (
 	"api-gateway/proxy"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -34,11 +35,18 @@ func main() {
 		proxy.NewSingleHostReverseProxy(target).ServeHTTP(w, r)
 	}))
 
+	// Rate Limiter — 5 req ต่อ 1 วินาที
+	limiter := middleware.NewRateLimiter(5, time.Second)
+
 	// Apply logging middleware globally
-	loggedRouter := middleware.Logging(router)
+	handler := middleware.LoggingMiddleware(
+		middleware.JWTAuth(
+			middleware.RateLimitMiddleware(limiter, router),
+		),
+	)
 
 	log.Println("API Gateway running on :8000")
-	if err := http.ListenAndServe(":8000", loggedRouter); err != nil {
+	if err := http.ListenAndServe(":8000", handler); err != nil {
 		log.Fatal(err)
 	}
 }
