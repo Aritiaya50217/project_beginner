@@ -18,13 +18,6 @@ func NewAuthHandler(usecase *usecase.AuthUsecase) *AuthHandler {
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	body := domain.RegisterRequest{}
-	// validate := validator.New()
-	// if err := validate.Struct(body); err != nil {
-	// 	return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "invalid request",
-	// 	})
-	// }
-
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid request",

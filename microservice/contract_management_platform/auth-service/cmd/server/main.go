@@ -8,6 +8,7 @@ import (
 	"auth-service/internal/adapters/http"
 	httpHandler "auth-service/internal/adapters/http"
 	"auth-service/internal/adapters/repository"
+	"auth-service/internal/adapters/token"
 	"auth-service/internal/infra/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,9 +24,15 @@ func main() {
 	db := database.Connect()
 	repo := repository.NewUserRepository(db)
 	authUsecase := usecase.NewAuthUsecase(repo)
-	handler := http.NewAuthHandler(authUsecase)
+	authHandler := http.NewAuthHandler(authUsecase)
 
-	httpHandler.RegisterAuthRoutes(app, handler)
+	userUsecase := usecase.NewUserUsecase(repo)
+	userHandler := http.NewUserHandler(userUsecase)
+
+	httpHandler.RegisterAuthRoutes(app, authHandler)
+	// middleware
+	jwtProvider := token.NewJWTProvider()
+	httpHandler.RegisterUserRoutes(app, userHandler, jwtProvider)
 
 	port := os.Getenv("APP_PORT")
 	log.Println("Auth service running on port : ", port)
