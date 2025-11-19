@@ -34,10 +34,10 @@ func main() {
 	jwtProvider := token.NewJWTProvider()
 	httpHandler.RegisterUserRoutes(app, userHandler, jwtProvider)
 
-	port := os.Getenv("APP_PORT")
-	log.Println("Auth service running on port : ", port)
-
-	if err := app.Listen(":" + port); err != nil {
-		log.Fatal(err)
+	port := os.Getenv("AUTH_PORT")
+	if port == "" {
+		port = "8081"
 	}
+	log.Println("auth-service running on port:", port)
+	app.Listen(":" + port)
 }
