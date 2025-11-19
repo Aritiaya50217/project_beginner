@@ -11,4 +11,6 @@ func RegisterContractRoutes(app *fiber.App, h *ContractHandler) {
 	r.Use(middleware.JWTMiddleware())
 
 	r.Post("/", h.Create)
+	r.Get("/list", h.ListContracts)
+	r.Get("/:id", h.Get)
 }

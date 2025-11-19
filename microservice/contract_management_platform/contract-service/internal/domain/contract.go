@@ -11,3 +11,10 @@ type Contract struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+const (
+	Draft    = "draft"
+	Pending  = "pending"
+	Approved = "approved"
+	Rejected = "rejected"
+)

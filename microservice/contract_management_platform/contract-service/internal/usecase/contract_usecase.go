@@ -25,3 +25,29 @@ func (u *contractUsecase) Create(userID uint, title, desc string) (*domain.Contr
 	}
 	return contract, nil
 }
+
+func (u *contractUsecase) Get(id uint) (*domain.Contract, error) {
+	return u.repo.GetByID(id)
+}
+
+func (u *contractUsecase) ListByUser(userID uint) ([]*domain.Contract, error) {
+	return u.repo.ListByUser(userID)
+}
+
+func (u *contractUsecase) Approve(id uint) error {
+	contract, err := u.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+	contract.Status = domain.Approved
+	return u.repo.Update(contract)
+}
+
+func (u *contractUsecase) Reject(id uint) error {
+	contract, err := u.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+	contract.Status = domain.Rejected
+	return u.repo.Update(contract)
+}
