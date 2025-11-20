@@ -1,14 +1,20 @@
-FROM golang:1.24 as builder
+FROM golang:1.24-alpine
+
+# ติดตั้ง tzdata
+RUN apk add --no-cache tzdata
+
 WORKDIR /app
+
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o contract-service ./cmd/server
 
-FROM alpine:3.18
-RUN apk add --no-cache ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/contract-service .
+COPY . .
+
+RUN go build -o contract-server ./cmd/server
+
+# ตั้ง timezone ภายใน container
 ENV TZ=Asia/Bangkok
+
 EXPOSE 8082
-CMD ["./contract-service"]
+
+CMD ["./contract-server"]

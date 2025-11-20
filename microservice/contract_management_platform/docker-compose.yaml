@@ -11,6 +11,7 @@ services:
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
       POSTGRES_DB: ${AUTH_DB_NAME}
+     
     ports:
       - "5433:5432"
     volumes:
@@ -30,10 +31,11 @@ services:
     container_name: contract_postgres
     restart: always
     environment:
-      TZ: "Asia/Bangkok"
+      Z: "Asia/Bangkok"
       POSTGRES_USER: ${CONTRACT_DB_USER}
       POSTGRES_PASSWORD: ${CONTRACT_DB_PASSWORD}
       POSTGRES_DB: ${CONTRACT_DB_NAME}
+  
     ports:
       - "5434:5432"
     volumes:

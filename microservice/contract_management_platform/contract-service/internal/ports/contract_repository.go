@@ -7,4 +7,5 @@ type ContractRepository interface {
 	GetByID(id uint) (*domain.Contract, error)
 	ListByUser(userID uint) ([]*domain.Contract, error)
 	Update(c *domain.Contract) error
+	Delete(id uint) error
 }

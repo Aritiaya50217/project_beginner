@@ -8,4 +8,5 @@ type ContractUsecase interface {
 	ListByUser(userID uint) ([]*domain.Contract, error)
 	Approve(id uint) error
 	Reject(id uint) error
+	DeleteContract(id uint) error
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"contract-service/internal/domain"
 	"contract-service/internal/ports"
 	"fmt"
 	"net/http"
@@ -23,7 +24,7 @@ type createContractReq struct {
 	Description string `json:"description" validate:"required"`
 }
 
-func (h *ContractHandler) Create(c *fiber.Ctx) error {
+func (h *ContractHandler) CreateContracts(c *fiber.Ctx) error {
 	var req createContractReq
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -65,7 +66,7 @@ func (h *ContractHandler) Create(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(contract)
 }
 
-func (h *ContractHandler) Get(c *fiber.Ctx) error {
+func (h *ContractHandler) GetContracts(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -97,4 +98,41 @@ func (h *ContractHandler) ListContracts(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(list)
+}
+
+func (h *ContractHandler) UpdateContract(c *fiber.Ctx) error {
+	id, _ := strconv.Atoi(c.Params("id"))
+	var req domain.Contract
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+	req.ID = uint(id)
+
+	if err := h.uc.Approve(req.ID); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(fiber.Map{"message": "updated"})
+}
+
+func (h *ContractHandler) DeleteContract(c *fiber.Ctx) error {
+	id, _ := strconv.Atoi(c.Params("id"))
+	
+	contract, err := h.uc.Get(uint(id))
+	if err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"message": "not found",
+		})
+	}
+
+	err = h.uc.DeleteContract(contract.ID)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(fiber.Map{"message": "deleted successfully"})
 }

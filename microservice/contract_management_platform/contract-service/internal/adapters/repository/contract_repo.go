@@ -3,6 +3,7 @@ package repository
 import (
 	"contract-service/internal/domain"
 	"contract-service/internal/ports"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -36,5 +37,27 @@ func (r *contractRepository) ListByUser(userID uint) ([]*domain.Contract, error)
 }
 
 func (r *contractRepository) Update(contract *domain.Contract) error {
-	return r.db.Save(contract).Error
+	result := r.db.Model(&domain.Contract{}).
+		Where("id = ?", contract.ID).
+		Updates(map[string]interface{}{
+			"user_id":    contract.UserID,
+			"status":     contract.Status,
+			"updated_at": time.Now(),
+		})
+
+	return result.Error
+}
+
+func (r *contractRepository) Delete(id uint) error {
+	result := r.db.Delete(&domain.Contract{}, id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }

@@ -51,3 +51,7 @@ func (u *contractUsecase) Reject(id uint) error {
 	contract.Status = domain.Rejected
 	return u.repo.Update(contract)
 }
+
+func (u *contractUsecase) DeleteContract(id uint) error {
+	return u.repo.Delete(id)
+}

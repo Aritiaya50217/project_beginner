@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,7 +13,7 @@ import (
 
 func ConnectDB() *gorm.DB {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok",
 		os.Getenv("CONTRACT_DB_HOST"),
 		os.Getenv("CONTRACT_DB_USER"),
 		os.Getenv("CONTRACT_DB_PASSWORD"),
@@ -20,7 +21,14 @@ func ConnectDB() *gorm.DB {
 		os.Getenv("CONTRACT_DB_PORT"),
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	time.Local, _ = time.LoadLocation("Asia/Bangkok")
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().In(time.Local)
+		},
+	})
+
 	if err != nil {
 		log.Fatalf("failed to connect DB: %v", err)
 	}
