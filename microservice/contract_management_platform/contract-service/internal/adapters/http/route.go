@@ -15,4 +15,4 @@ func RegisterContractRoutes(app *fiber.App, h *ContractHandler) {
 	r.Get("/:id", h.GetContracts)
 	r.Post("/:id", h.UpdateContract)
 	r.Delete("/:id", h.DeleteContract)
-}
+} 

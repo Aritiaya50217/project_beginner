@@ -81,6 +81,27 @@ services:
     environment:
       TZ: "Asia/Bangkok"
 
+  # =========================
+  # CONTRACT PROXY
+  # =========================
+  contract-proxy:
+    build: ./contract-proxy
+    container_name: contract_proxy
+    env_file: .env
+    ports:
+      - "8083:8083"
+    restart: always
+    depends_on:
+      auth-service:
+        condition: service_started
+      contract-service:
+        condition: service_started
+    environment:
+      TZ: "Asia/Bangkok"
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      CONTRACT_SERVICE_URL: ${CONTRACT_SERVICE_URL}
+      JWT_SECRET: ${JWT_SECRET}    
+
 
 volumes:
   pgdata:
