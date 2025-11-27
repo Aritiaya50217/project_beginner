@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   # =========================
   # AUTH DATABASE
@@ -11,7 +13,6 @@ services:
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
       POSTGRES_DB: ${AUTH_DB_NAME}
-     
     ports:
       - "5433:5432"
     volumes:
@@ -31,11 +32,10 @@ services:
     container_name: contract_postgres
     restart: always
     environment:
-      Z: "Asia/Bangkok"
+      TZ: "Asia/Bangkok"
       POSTGRES_USER: ${CONTRACT_DB_USER}
       POSTGRES_PASSWORD: ${CONTRACT_DB_PASSWORD}
       POSTGRES_DB: ${CONTRACT_DB_NAME}
-  
     ports:
       - "5434:5432"
     volumes:
@@ -46,7 +46,6 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
-
 
   # =========================
   # AUTH SERVICE
@@ -63,7 +62,6 @@ services:
     restart: always
     environment:
       TZ: "Asia/Bangkok"
-
 
   # =========================
   # CONTRACT SERVICE
@@ -90,18 +88,69 @@ services:
     env_file: .env
     ports:
       - "8083:8083"
-    restart: always
     depends_on:
       auth-service:
         condition: service_started
       contract-service:
         condition: service_started
+    restart: always
     environment:
       TZ: "Asia/Bangkok"
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
       CONTRACT_SERVICE_URL: ${CONTRACT_SERVICE_URL}
-      JWT_SECRET: ${JWT_SECRET}    
+      JWT_SECRET: ${JWT_SECRET}
 
+  # =========================
+  # ZOOKEEPER (Confluent)
+  # =========================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    restart: always
+
+  # =========================
+  # KAFKA (Confluent)
+  # =========================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+
+      # Listener
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+      # Replication settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Fast start
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    restart: always
+
+  # =========================
+  # NOTIFICATION WORKER
+  # =========================
+  notification-worker:
+    build: ./notification-worker
+    container_name: notification_worker
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+    restart: always
 
 volumes:
   pgdata:
