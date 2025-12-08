@@ -18,3 +18,4 @@ ENV TZ=Asia/Bangkok
 EXPOSE 8081
 
 CMD ["./auth-server"]
+ 
