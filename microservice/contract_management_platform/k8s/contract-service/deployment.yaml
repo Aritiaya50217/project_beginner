@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contract-service
+  namespace: contract-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: contract-service
+  template:
+    metadata:
+      labels:
+        app: contract-service
+    spec:
+      containers:
+      - name: contract-service
+        image: artis50217/contract-service:latest
+        ports:
+        - containerPort: 8080

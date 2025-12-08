@@ -3,60 +3,43 @@ name: Auth Service CI/CD
 on:
   push:
     paths:
-      - "auth-service/**"
-      - ".github/workflows/auth-service.yml"
+      - 'auth-service/**'
+  pull_request:
+    paths:
+      - 'auth-service/**'
 
 jobs:
-  build-push-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-    # 1. Checkout Code
     - name: Checkout
       uses: actions/checkout@v3
 
-    # 2. Setup Go
-    - name: Setup Go
+    - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: "1.22"
+        go-version: '1.24'
 
-    # 3. Build Binary
-    - name: Build Go App
-      working-directory: ./auth-service
-      run: go build -o auth-service ./cmd/server
+    - name: Build Go
+      run: |
+        cd auth-service
+        go mod tidy
+        go build -o app ./cmd/server
 
-    # 4. Login Docker Registry
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Login Docker Hub
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    # 5. Build & Push Docker Image
-    - name: Build & Push Docker Image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./auth-service
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
-          ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ github.sha }}
+    - name: Build & Push Image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ github.sha }} auth-service
+        docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ github.sha }}
 
-    # 6. Setup kubectl
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    # 7. Connect Kubernetes Cluster
     - name: Set kubeconfig
       run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$(pwd)/kubeconfig
 
-    # 8. Deployment Rolling Update
     - name: Deploy to Kubernetes
       run: |
-        kubectl set image deployment/auth-service \
-        auth-service=${{ secrets.DOCKER_USERNAME }}/auth-service:${{ github.sha }}
+        kubectl -n contract-platform set image deployment/auth-service auth-service=${{ secrets.DOCKER_USERNAME }}/auth-service:${{ github.sha }}
