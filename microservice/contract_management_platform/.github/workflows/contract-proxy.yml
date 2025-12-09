@@ -1,32 +1,34 @@
-name: Contract Proxy CI/CD
+name: Contract Proxy CI/CD (Local Docker)
+
 on:
   push:
-    paths:
-      - 'contract-proxy/**'
+    branches: [ main ]
+  pull_request:
+
 jobs:
-  deploy:
+  build-and-run:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          go-version: '1.24'
-      - name: Build Go
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --prefix ./contract-proxy
+
+      - name: Run tests
+        run: npm test --prefix ./contract-proxy
+
+      - name: Build Docker image
+        run: docker build -t contract-proxy:latest ./contract-proxy
+
+      - name: Run container
         run: |
-          cd contract-proxy
-          go mod tidy
-          go build -o app ./cmd/server
-      - name: Login Docker Hub
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-      - name: Build & Push Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/contract-proxy:${{ github.sha }} contract-proxy
-          docker push ${{ secrets.DOCKER_USERNAME }}/contract-proxy:${{ github.sha }}
-      - name: Set kubeconfig
-        run: |
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
-      - name: Deploy
-        run: |
-          kubectl -n contract-platform set image deployment/contract-proxy contract-proxy=${{ secrets.DOCKER_USERNAME }}/contract-proxy:${{ github.sha }}
+          docker stop contract-proxy || true
+          docker rm contract-proxy || true
+          docker run -d --name contract-proxy -p 8083:8083 contract-proxy:latest
