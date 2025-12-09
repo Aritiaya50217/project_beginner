@@ -1,0 +1,39 @@
+name: Multi-Service CI/CD (Local Docker)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SERVICES: auth-service contract-service contract-proxy notification-worker
+      DOCKER_USER: artis50217
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. Login to Docker Hub (optional, ถ้าจะ push)
+      - name: Log in to Docker Hub
+        if: ${{ secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD }}
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 4. Run CI/CD script
+      - name: Run CI/CD script
+        run: |
+          chmod +x ./ci_cd.sh
+          ./ci_cd.sh
