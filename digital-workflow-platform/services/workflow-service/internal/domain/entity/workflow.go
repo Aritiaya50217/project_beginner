@@ -18,5 +18,6 @@ func (w *Workflow) Approve() error {
 		return errors.New("workflow cannot be approved")
 	}
 	w.Status = "APPROVED"
+	w.UpdatedAt = time.Now()
 	return nil
 }
