@@ -54,4 +54,3 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/workflow-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/workflow-service:${{ github.sha }}
- 
